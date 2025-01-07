@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+tmux new-window -n "api" -c "./cmd/api"
+tmux new-window -n "internal" -c "./internal"
+tmux new-window -n "etc" -c "./"
