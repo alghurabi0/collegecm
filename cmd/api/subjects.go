@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"collegecm.hamid.net/internal/data"
@@ -20,7 +21,7 @@ func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "http://localhost:5173")        // Allow the Vue.js app to make requests
+	header.Set("Access-Control-Allow-Origin", "*")                            // Allow the Vue.js app to make requests
 	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")      // Allow these HTTP methods
 	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization") // Allow these headers
 	header.Set("Access-Control-Allow-Credentials", "true")
@@ -85,6 +86,7 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		fmt.Println(err)
 		return
 	}
 	subject := &data.Subject{
@@ -123,9 +125,9 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 	//headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 	// Dump the contents of the input struct in a HTTP response.
 	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "http://localhost:5173")            // Allow the Vue.js app to make requests
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS") // Allow these HTTP methods
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")     // Allow these headers
+	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
+	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
+	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
 	header.Set("Access-Control-Allow-Credentials", "true")
 	err = app.writeJSON(w, http.StatusCreated, envelope{"subject": subject}, header)
 	if err != nil {
@@ -222,7 +224,7 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 	}
 	// Write the updated movie record in a JSON response.
 	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "http://localhost:5173")                   // Allow the Vue.js app to make requests
+	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
 	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
 	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
 	header.Set("Access-Control-Allow-Credentials", "true")
@@ -251,7 +253,12 @@ func (app *application) deleteSubject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Return a 200 OK status code along with a success message.
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "subject successfully deleted"}, nil)
+	header := make(http.Header)
+	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
+	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
+	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
+	header.Set("Access-Control-Allow-Credentials", "true")
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "subject successfully deleted"}, header)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
