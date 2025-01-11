@@ -10,20 +10,20 @@ import (
 )
 
 type Subject struct {
-	ID                 int       `json:"subject_id"`
-	SubjectName        string    `json:"subject_name"`
-	SubjectNameEnglish string    `json:"subject_name_english"`
-	Stage              string    `json:"stage"`
-	Semester           string    `json:"semester"`
-	Department         string    `json:"department"`
-	MaxTheoryMark      int       `json:"max_theory_mark"`
-	MaxLabMark         int       `json:"max_lab_mark"`
-	MaxSemesterMark    int       `json:"max_semester_mark"`
-	MaxFinalExam       int       `json:"max_final_exam"`
-	Credits            int       `json:"credits"`
-	Active             string    `json:"active"`
-	Ministerial        string    `json:"ministerial"`
-	CreatedAt          time.Time `json:"-"`
+	ID                 int       `json:"subject_id" csv:"subject_id"`
+	SubjectName        string    `json:"subject_name" csv:"subject_name"`
+	SubjectNameEnglish string    `json:"subject_name_english" csv:"subject_name_english"`
+	Stage              string    `json:"stage" csv:"stage"`
+	Semester           string    `json:"semester" csv:"semester"`
+	Department         string    `json:"department" csv:"department"`
+	MaxTheoryMark      int       `json:"max_theory_mark" csv:"max_theory_mark"`
+	MaxLabMark         int       `json:"max_lab_mark" csv:"max_lab_mark"`
+	MaxSemesterMark    int       `json:"max_semester_mark" csv:"max_semester_mark"`
+	MaxFinalExam       int       `json:"max_final_exam" csv:"max_final_exam"`
+	Credits            int       `json:"credits" csv:"credits"`
+	Active             string    `json:"active" csv:"active"`
+	Ministerial        string    `json:"ministerial" csv:"ministerial"`
+	CreatedAt          time.Time `json:"-" csv:"-"`
 }
 
 func ValidateSubject(v *validator.Validator, subject *Subject) {

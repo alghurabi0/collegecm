@@ -20,12 +20,7 @@ func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "*")                            // Allow the Vue.js app to make requests
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")      // Allow these HTTP methods
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization") // Allow these headers
-	header.Set("Access-Control-Allow-Credentials", "true")
-	err = app.writeJSON(w, http.StatusOK, envelope{"subjects": subjects}, header)
+	err = app.writeJSON(w, http.StatusOK, envelope{"subjects": subjects}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -124,12 +119,7 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 	//headers := make(http.Header)
 	//headers.Set("Location", fmt.Sprintf("/v1/movies/%d", movie.ID))
 	// Dump the contents of the input struct in a HTTP response.
-	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
-	header.Set("Access-Control-Allow-Credentials", "true")
-	err = app.writeJSON(w, http.StatusCreated, envelope{"subject": subject}, header)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"subject": subject}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -223,12 +213,7 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Write the updated movie record in a JSON response.
-	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
-	header.Set("Access-Control-Allow-Credentials", "true")
-	err = app.writeJSON(w, http.StatusOK, envelope{"subject": subject}, header)
+	err = app.writeJSON(w, http.StatusOK, envelope{"subject": subject}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -253,13 +238,34 @@ func (app *application) deleteSubject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Return a 200 OK status code along with a success message.
-	header := make(http.Header)
-	header.Set("Access-Control-Allow-Origin", "*")                                       // Allow the Vue.js app to make requests
-	header.Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS") // Allow these HTTP methods
-	header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization")            // Allow these headers
-	header.Set("Access-Control-Allow-Credentials", "true")
-	err = app.writeJSON(w, http.StatusOK, envelope{"message": "subject successfully deleted"}, header)
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "subject successfully deleted"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max memory
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, "الحد الاقصى لحجم الملف هو mb 10 ")
+		return
+	}
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, "لم يتم ارفاق ملف")
+		return
+	}
+	defer file.Close()
+	subjects := []*data.Subject{}
+	err = app.processFile(&file, &subjects)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, "حدث خطأ, يرجى التواصل مع الدعم")
+		return
+	}
+	for _, subject := range subjects {
+		fmt.Println(subject)
+		// validate
+		// insert
+	}
+	// get all subjects or redirect
 }

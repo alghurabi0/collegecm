@@ -5,9 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/gocarina/gocsv"
 )
 
 type envelope map[string]interface{}
@@ -101,6 +104,14 @@ func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst int
 	err = dec.Decode(&struct{}{})
 	if err != io.EOF {
 		return errors.New("body must only contain a single JSON value")
+	}
+	return nil
+}
+
+func (app *application) processFile(file *multipart.File, data interface{}) error {
+	err := gocsv.UnmarshalMultipartFile(file, data)
+	if err != nil {
+		return err
 	}
 	return nil
 }
