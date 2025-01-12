@@ -261,13 +261,14 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 	err = app.processFile(&file, &subjects)
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, "حدث خطأ, يرجى التواصل مع الدعم")
+		fmt.Println(err)
 		return
 	}
 	allErrors := make(map[string]string)
+	v := validator.New()
 	for i, subject := range subjects {
-		fmt.Println(subject)
 		// validate
-		v := validator.New()
+		v.Errors = make(map[string]string)
 		if data.ValidateSubject(v, subject); !v.Valid() {
 			var errorMsgs []string
 			for key, msg := range v.Errors {
