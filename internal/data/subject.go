@@ -27,14 +27,11 @@ type Subject struct {
 }
 
 func ValidateSubject(v *validator.Validator, subject *Subject) {
+	// TODO - handle strings length with varchar
 	v.Check(subject.SubjectName != "", "subject_name", "must be provided")
-	v.Check(len(subject.SubjectName) <= 50, "subject_name", "must not be more than 50 charachters")
 	v.Check(subject.SubjectNameEnglish != "", "subject_name_english", "must be provided")
-	v.Check(len(subject.SubjectNameEnglish) <= 50, "subject_name_english", "must not be more than 50 charachters")
 	v.Check(subject.Stage != "", "stage", "must be provided")
-	v.Check(len(subject.Stage) <= 30, "stage", "must not be more than 10 charachters")
 	v.Check(subject.Semester != "", "semester", "must be provided")
-	v.Check(len(subject.Semester) <= 30, "semester", "must not be more than 10 charachters")
 	v.Check(subject.Department != "", "department", "must be provided")
 	v.Check(subject.MaxTheoryMark >= 0, "max_theory_mark", "must not be less than zero")
 	v.Check(subject.MaxLabMark >= 0, "max_lab_mark", "must not be zero less than zero")

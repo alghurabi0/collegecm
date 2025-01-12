@@ -301,7 +301,7 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 			app.serverErrorResponse(w, r, err)
 		}
 	} else {
-		err = app.writeJSON(w, http.StatusOK, envelope{"subjects": subjects}, nil)
+		err = app.writeJSON(w, http.StatusOK, envelope{"subjects": allSubjects}, nil)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 		}
