@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"collegecm.hamid.net/internal/data"
 	"collegecm.hamid.net/internal/validator"
@@ -262,10 +263,45 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 		app.errorResponse(w, r, http.StatusBadRequest, "حدث خطأ, يرجى التواصل مع الدعم")
 		return
 	}
-	for _, subject := range subjects {
-		fmt.Println(subject)
+	allErrors := make(map[string]string)
+	for i, subject := range subjects {
 		// validate
-		// insert
+		v := validator.New()
+		if data.ValidateSubject(v, subject); !v.Valid() {
+			var errorMsgs []string
+			for key, msg := range v.Errors {
+				errorMsgs = append(errorMsgs, key+": "+msg)
+			}
+			allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
+			continue
+		}
+		err = app.models.Subjects.Insert(subject)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
 	}
 	// get all subjects or redirect
+	allSubjects, err := app.models.Subjects.GetAll()
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	if len(allErrors) > 0 {
+		err = app.writeJSON(w, http.StatusOK, envelope{"subjects": allSubjects, "errors": allErrors}, nil)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+		}
+	} else {
+		err = app.writeJSON(w, http.StatusOK, envelope{"subjects": subjects}, nil)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+		}
+	}
 }
