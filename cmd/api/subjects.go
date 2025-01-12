@@ -265,6 +265,7 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 	}
 	allErrors := make(map[string]string)
 	for i, subject := range subjects {
+		fmt.Println(subject)
 		// validate
 		v := validator.New()
 		if data.ValidateSubject(v, subject); !v.Valid() {
