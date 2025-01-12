@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/justinas/alice"
@@ -15,6 +16,7 @@ func (app *application) routes() http.Handler {
 	// endpoints using the HandlerFunc() method. Note that http.MethodGet and
 	// http.MethodPost are constants which equate to the strings "GET" and "POST"
 	// respectively.
+	router.HandleFunc("OPTIONS /", func(w http.ResponseWriter, r *http.Request) { fmt.Println("options req") })
 	router.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
 	router.HandleFunc("GET /v1/subjects", app.getSubjects)
 	router.HandleFunc("GET /v1/subjects/{id}", app.getSubjectHandler)

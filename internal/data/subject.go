@@ -36,7 +36,6 @@ func ValidateSubject(v *validator.Validator, subject *Subject) {
 	v.Check(subject.Semester != "", "semester", "must be provided")
 	v.Check(len(subject.Semester) <= 30, "semester", "must not be more than 10 charachters")
 	v.Check(subject.Department != "", "department", "must be provided")
-	v.Check(len([]byte(subject.Department)) <= 50, "department", "must not be more than 50 charachters")
 	v.Check(subject.MaxTheoryMark >= 0, "max_theory_mark", "must not be less than zero")
 	v.Check(subject.MaxLabMark >= 0, "max_lab_mark", "must not be zero less than zero")
 	v.Check(subject.MaxSemesterMark >= 0, "max_semester_mark", "must not be zero less than zero")
