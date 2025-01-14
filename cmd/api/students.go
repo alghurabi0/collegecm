@@ -106,7 +106,7 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 		Stage       *string `json:"stage"`
 		StudentId   *int    `json:"student_id"`
 		State       *string `json:"state"`
-		OldId       *string `json:"old_id"`
+		OldId       *int    `json:"old_id"`
 	}
 	err = app.readJSON(w, r, &input)
 	if err != nil {
