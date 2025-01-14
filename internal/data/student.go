@@ -39,7 +39,7 @@ func (m StudentModel) Insert(student *Student) error {
 		state
 		) 
         VALUES ($1, $2, $3, $4)
-        RETURNING created_at`
+        RETURNING created_at, seq_in_college`
 	args := []interface{}{student.StudentName,
 		student.Stage,
 		student.StudentId,
@@ -47,7 +47,7 @@ func (m StudentModel) Insert(student *Student) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	return m.DB.QueryRowContext(ctx, query, args...).Scan(&student.CreatedAt)
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&student.CreatedAt, &student.SeqInCollege)
 }
 
 func (m StudentModel) GetAll() ([]*Student, error) {
