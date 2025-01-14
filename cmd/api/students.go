@@ -211,7 +211,6 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-
 	if len(allErrors) > 0 {
 		err = app.writeJSON(w, http.StatusOK, envelope{"students": allStudents, "errors": allErrors}, nil)
 		if err != nil {
