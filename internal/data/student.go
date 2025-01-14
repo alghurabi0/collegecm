@@ -33,9 +33,9 @@ type StudentModel struct {
 func (m StudentModel) Insert(student *Student) error {
 	query := `
         INSERT INTO students (
-		subject_name,
+		student_name,
 		stage,
-		subject_id,
+		student_id,
 		state
 		) 
         VALUES ($1, $2, $3, $4)
