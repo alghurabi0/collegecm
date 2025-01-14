@@ -18,12 +18,20 @@ func (app *application) routes() http.Handler {
 	// respectively.
 	router.HandleFunc("OPTIONS /", func(w http.ResponseWriter, r *http.Request) { fmt.Println("options req") })
 	router.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
+	// subjects
 	router.HandleFunc("GET /v1/subjects", app.getSubjects)
 	router.HandleFunc("GET /v1/subjects/{id}", app.getSubjectHandler)
 	router.HandleFunc("POST /v1/subjects", app.createSubjectHandler)
 	router.HandleFunc("POST /v1/subjects/import", app.importSubjects)
 	router.HandleFunc("PATCH /v1/subjects/{id}", app.updateSubject)
 	router.HandleFunc("DELETE /v1/subjects/{id}", app.deleteSubject)
+	// students
+	router.HandleFunc("GET /v1/students", app.getStudents)
+	router.HandleFunc("GET /v1/students/{id}", app.getStudent)
+	router.HandleFunc("POST /v1/students", app.createStudent)
+	router.HandleFunc("POST /v1/students/import", app.importstudents)
+	router.HandleFunc("PATCH /v1/students/{id}", app.updateStudent)
+	router.HandleFunc("DELETE /v1/students/{id}", app.deleteStudent)
 	// Return the httprouter instance.
 	return headers.Then(router)
 }
