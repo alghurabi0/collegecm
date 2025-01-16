@@ -113,17 +113,16 @@ func (m StudentModel) Get(id int64) (*Student, error) {
 	return &student, nil
 }
 
-func (m StudentModel) Update(student *Student, id int) error {
+func (m StudentModel) Update(student *Student) error {
 	query := `
 	UPDATE students
 	SET student_name = $1, stage = $2, state = $4
-	WHERE student_id = $5`
+	WHERE student_id = $3`
 	args := []interface{}{
 		&student.StudentName,
 		&student.Stage,
 		&student.StudentId,
 		&student.State,
-		id,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()

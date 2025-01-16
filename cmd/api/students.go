@@ -129,7 +129,7 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Students.Update(student, int(id))
+	err = app.models.Students.Update(student)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
