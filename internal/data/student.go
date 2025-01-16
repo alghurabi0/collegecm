@@ -116,7 +116,7 @@ func (m StudentModel) Get(id int64) (*Student, error) {
 func (m StudentModel) Update(student *Student, id int) error {
 	query := `
 	UPDATE students
-	SET student_name = $1, stage = $2, student_id = $3, state = $4
+	SET student_name = $1, stage = $2, state = $4
 	WHERE student_id = $5`
 	args := []interface{}{
 		&student.StudentName,
