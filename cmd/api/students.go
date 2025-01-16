@@ -134,11 +134,10 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	app.notFoundResponse(w, r)
-	//err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
-	//if err != nil {
-	//	app.serverErrorResponse(w, r, err)
-	//}
+	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
