@@ -196,8 +196,7 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 		}
 		err = app.models.Students.Insert(student)
 		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
+			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
 		}
 	}
 	// get all subjects or redirect
