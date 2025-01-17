@@ -45,7 +45,7 @@ func (m CarryoverModel) Insert(carryover *Carryover) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&carryover.Id, &carryover.CreatedAt)
 }
 
-// dd
+// ddd
 func (m CarryoverModel) GetAll() ([]*Carryover, error) {
 	query := `
 	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name
