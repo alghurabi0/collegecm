@@ -47,7 +47,7 @@ func (m CarryoverModel) Insert(carryover *Carryover) error {
 
 func (m CarryoverModel) GetAll() ([]*Carryover, error) {
 	query := `
-	SELECT c.id, s.name AS student_name, sub.name AS subject_name
+	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name
 	FROM carryovers c
 	JOIN students s ON c.student_id = s.student_id
 	JOIN subjects sub ON c.subject_id = sub.subject_id;
