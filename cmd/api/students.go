@@ -60,7 +60,6 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
-		fmt.Println(err)
 		return
 	}
 	student := &data.Student{
