@@ -49,8 +49,8 @@ func (m CarryoverModel) GetAll() ([]*Carryover, error) {
 	query := `
 	SELECT c.id, s.name AS student_name, sub.name AS subject_name
 	FROM carryovers c
-	JOIN students s ON c.student_id = s.id
-	JOIN subjects sub ON c.subject_id = sub.id;
+	JOIN students s ON c.student_id = s.student_id
+	JOIN subjects sub ON c.subject_id = sub.subject_id;
 	`
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
