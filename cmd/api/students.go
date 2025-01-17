@@ -21,7 +21,7 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"data": students}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"students": students}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
