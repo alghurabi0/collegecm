@@ -34,7 +34,7 @@ func (m CarryoverModel) Insert(carryover *Carryover) error {
 		student_id,
 		subject_id
 		) 
-        VALUES ($1, $2,)
+        VALUES ($1, $2)
         RETURNING id, created_at`
 	args := []interface{}{
 		carryover.StudentId,
