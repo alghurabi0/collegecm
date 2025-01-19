@@ -121,7 +121,7 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 }
 
 func (m MarkModel) GetRaw(id int64) (*Mark, error) {
-	query := `SELECT * from marks WHERE id = $1;`
+	query := `SELECT id, student_id, subject_id, semester_mark, final_mark from marks WHERE id = $1;`
 	var mark Mark
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -131,7 +131,6 @@ func (m MarkModel) GetRaw(id int64) (*Mark, error) {
 		&mark.SubjectId,
 		&mark.SemesterMark,
 		&mark.FinalMark,
-		&mark.CreatedAt,
 	)
 	if err != nil {
 		switch {
