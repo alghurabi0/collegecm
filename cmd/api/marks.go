@@ -108,7 +108,7 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 		app.notFoundResponse(w, r)
 		return
 	}
-	mark, err := app.models.Marks.Get(id)
+	mark, err := app.models.Marks.GetRaw(id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -148,14 +148,12 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	student, err := app.models.Students.Get(mark.StudentId)
+	newMark, err := app.models.Marks.Get(id)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	mark.StudentName = student.StudentName
-	mark.SubjectName = subject.SubjectName
-	err = app.writeJSON(w, http.StatusCreated, envelope{"mark": mark}, nil)
+	err = app.writeJSON(w, http.StatusCreated, envelope{"mark": newMark}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

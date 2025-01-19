@@ -120,6 +120,29 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 	return &mark, nil
 }
 
+func (m MarkModel) GetRaw(id int64) (*Mark, error) {
+	query := `SELECT * from marks WHERE id = $1;`
+	var mark Mark
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&mark.Id,
+		&mark.StudentId,
+		&mark.SubjectId,
+		&mark.SemesterMark,
+		&mark.FinalMark,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &mark, nil
+}
+
 func (m MarkModel) Update(mark *Mark) error {
 	query := `
 	UPDATE marks
