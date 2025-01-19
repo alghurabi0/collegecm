@@ -47,7 +47,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /v1/exempteds/subjects/{id}", app.getSubjectsExempteds)
 	router.HandleFunc("GET /v1/exempteds/students/{id}", app.getStudentsExempteds)
 	router.HandleFunc("POST /v1/exempteds", app.createExempted)
-	router.HandleFunc("DELETE /v1/carryovers/{id}", app.deleteExempted)
+	router.HandleFunc("DELETE /v1/exempteds/{id}", app.deleteExempted)
 	// Return the httprouter instance.
 	return headers.Then(router)
 }
