@@ -42,7 +42,7 @@ func (m MarkModel) Insert(mark *Mark) error {
 		semester_mark,
 		final_mark
 		) 
-        VALUES ($1, $2, 3$, 4$)
+        VALUES ($1, $2, $3, $4)
         RETURNING id, created_at`
 	args := []interface{}{
 		mark.StudentId,
