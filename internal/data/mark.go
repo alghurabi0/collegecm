@@ -96,7 +96,7 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name, c.semester_mark, c.final_mark
 	FROM marks c
 	JOIN students s ON c.student_id = s.student_id
-	JOIN subjects sub ON c.subject.id = sub.subject_id
+	JOIN subjects sub ON c.subject_id = sub.subject_id
 	WHERE c.id = $1;
 	`
 	var mark Mark
