@@ -131,6 +131,7 @@ func (m MarkModel) GetRaw(id int64) (*Mark, error) {
 		&mark.SubjectId,
 		&mark.SemesterMark,
 		&mark.FinalMark,
+		&mark.CreatedAt,
 	)
 	if err != nil {
 		switch {
