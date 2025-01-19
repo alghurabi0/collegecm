@@ -17,6 +17,7 @@ type Models struct {
 	Subjects   SubjectModel
 	Students   StudentModel
 	Carryovers CarryoverModel
+	Exempteds  ExemptedModel
 }
 
 // For ease of use, we also add a New() method which returns a Models struct containing
@@ -26,5 +27,6 @@ func NewModels(db *sql.DB) Models {
 		Subjects:   SubjectModel{DB: db},
 		Students:   StudentModel{DB: db},
 		Carryovers: CarryoverModel{DB: db},
+		Exempteds:  ExemptedModel{DB: db},
 	}
 }
