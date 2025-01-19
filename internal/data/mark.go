@@ -146,7 +146,7 @@ func (m MarkModel) GetRaw(id int64) (*Mark, error) {
 func (m MarkModel) Update(mark *Mark) error {
 	query := `
 	UPDATE marks
-	SET student_id = $2, subject_id = $3 semester_mark = $4, final_mark = $5
+	SET student_id = $2, subject_id = $3, semester_mark = $4, final_mark = $5
 	WHERE id = $1`
 	args := []interface{}{
 		&mark.Id,
