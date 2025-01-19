@@ -156,6 +156,18 @@ func (app *application) createCarryover(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 		return
 	}
+	student, err := app.models.Students.Get(carryover.StudentId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	subject, err := app.models.Subjects.Get(carryover.SubjectId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	carryover.StudentName = student.StudentName
+	carryover.SubjectName = subject.SubjectName
 	err = app.writeJSON(w, http.StatusCreated, envelope{"carryover": carryover}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
