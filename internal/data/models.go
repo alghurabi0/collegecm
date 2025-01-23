@@ -19,6 +19,7 @@ type Models struct {
 	Carryovers CarryoverModel
 	Exempteds  ExemptedModel
 	Marks      MarkModel
+	Customs    CustomModel
 }
 
 // For ease of use, we also add a New() method which returns a Models struct containing
@@ -30,5 +31,6 @@ func NewModels(db *sql.DB) Models {
 		Carryovers: CarryoverModel{DB: db},
 		Exempteds:  ExemptedModel{DB: db},
 		Marks:      MarkModel{DB: db},
+		Customs:    CustomModel{DB: db},
 	}
 }

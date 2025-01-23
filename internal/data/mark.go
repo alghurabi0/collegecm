@@ -10,14 +10,16 @@ import (
 )
 
 type Mark struct {
-	Id           int64     `json:"id"`
-	StudentId    int64     `json:"student_id"`
-	SubjectId    int64     `json:"subject_id"`
-	StudentName  string    `json:"student_name"`
-	SubjectName  string    `json:"subject_name"`
-	SemesterMark int       `json:"semester_mark"`
-	FinalMark    int       `json:"final_mark"`
-	CreatedAt    time.Time `json:"-"`
+	Id              int64     `json:"id"`
+	StudentId       int64     `json:"student_id"`
+	SubjectId       int64     `json:"subject_id"`
+	StudentName     string    `json:"student_name"`
+	SubjectName     string    `json:"subject_name"`
+	SemesterMark    int       `json:"semester_mark"`
+	MaxSemesterMark int       `json:"max_semester_mark"`
+	FinalMark       int       `json:"final_mark"`
+	MaxFinalExam    int       `json:"max_final_exam"`
+	CreatedAt       time.Time `json:"-"`
 }
 
 func ValidateMark(v *validator.Validator, mark *Mark, sem, fin int) {
