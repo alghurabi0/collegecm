@@ -96,6 +96,8 @@ func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
 	}
 	mark.StudentName = student.StudentName
 	mark.SubjectName = subject.SubjectName
+	mark.MaxSemesterMark = subject.MaxSemesterMark
+	mark.MaxFinalExam = subject.MaxFinalExam
 	err = app.writeJSON(w, http.StatusCreated, envelope{"mark": mark}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
