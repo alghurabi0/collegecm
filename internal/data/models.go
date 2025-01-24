@@ -20,6 +20,7 @@ type Models struct {
 	Exempteds  ExemptedModel
 	Marks      MarkModel
 	Customs    CustomModel
+	Years      YearModel
 }
 
 // For ease of use, we also add a New() method which returns a Models struct containing
@@ -32,5 +33,6 @@ func NewModels(db *sql.DB) Models {
 		Exempteds:  ExemptedModel{DB: db},
 		Marks:      MarkModel{DB: db},
 		Customs:    CustomModel{DB: db},
+		Years:      YearModel{DB: db},
 	}
 }
