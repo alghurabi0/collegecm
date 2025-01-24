@@ -59,7 +59,14 @@ func (m MarkModel) Insert(mark *Mark) error {
 
 func (m MarkModel) GetAll() ([]*Mark, error) {
 	query := `
-	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name, c.semester_mark, c.final_mark
+	SELECT
+	c.id,
+	s.student_name AS student_name,
+	sub.subject_name AS subject_name,
+	c.semester_mark,
+	sub.max_semester_mark AS max_semester_mark,
+	c.final_mark,
+	sub.max_final_exam AS max_final_exam
 	FROM marks c
 	JOIN students s ON c.student_id = s.student_id
 	JOIN subjects sub ON c.subject_id = sub.subject_id;
@@ -80,7 +87,9 @@ func (m MarkModel) GetAll() ([]*Mark, error) {
 			&mark.StudentName,
 			&mark.SubjectName,
 			&mark.SemesterMark,
+			&mark.MaxSemesterMark,
 			&mark.FinalMark,
+			&mark.MaxFinalExam,
 		)
 		if err != nil {
 			return nil, err
@@ -95,7 +104,14 @@ func (m MarkModel) GetAll() ([]*Mark, error) {
 
 func (m MarkModel) Get(id int64) (*Mark, error) {
 	query := `
-	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name, c.semester_mark, c.final_mark
+	SELECT
+	c.id,
+	s.student_name AS student_name,
+	sub.subject_name AS subject_name,
+	c.semester_mark,
+	sub.max_semester_mark AS max_semester_mark,
+	c.final_mark,
+	sub.max_final_exam AS max_final_exam
 	FROM marks c
 	JOIN students s ON c.student_id = s.student_id
 	JOIN subjects sub ON c.subject_id = sub.subject_id
@@ -109,7 +125,9 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 		&mark.StudentName,
 		&mark.SubjectName,
 		&mark.SemesterMark,
+		&mark.MaxSemesterMark,
 		&mark.FinalMark,
+		&mark.MaxFinalExam,
 	)
 	if err != nil {
 		switch {
