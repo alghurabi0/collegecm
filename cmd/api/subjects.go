@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
-	subjects, err := app.models.Subjects.GetAll()
+	year, stage, err := app.readParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	subjects, err := app.models.Subjects.GetAll(year, stage)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -284,7 +289,7 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// get all subjects or redirect
-	allSubjects, err := app.models.Subjects.GetAll()
+	allSubjects, err := app.models.Subjects.GetAll("", "")
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

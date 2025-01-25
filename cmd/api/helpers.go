@@ -35,28 +35,20 @@ func (app *application) readParams(r *http.Request) (string, string, error) {
 	switch strings.TrimSpace(param2) {
 	case "1":
 		param2 = "الاولى"
-		break
 	case "2":
 		param2 = "الثانية"
-		break
 	case "3":
 		param2 = "الثالثة"
-		break
 	case "4":
 		param2 = "الرابعة"
-		break
 	case "5":
 		param2 = "الخامسة"
-		break
 	case "6":
 		param2 = "السادسة"
-		break
 	case "all":
 		param2 = "all"
-		break
 	default:
 		param2 = ""
-		break
 	}
 	if strings.TrimSpace(param2) == "" {
 		return "", "", errors.New("empty stage parameter")

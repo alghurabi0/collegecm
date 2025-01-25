@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"collegecm.hamid.net/internal/validator"
@@ -91,11 +93,23 @@ func (m SubjectModel) Insert(subject *Subject) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&subject.CreatedAt)
 }
 
-func (m SubjectModel) GetAll() ([]*Subject, error) {
-	query := `SELECT * FROM subjects`
+func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	year = fmt.Sprintf("subjects_%s", year)
+	query := ``
+	var args []interface{}
+	args = append(args, year)
+	if stage == "all" {
+		query = `SELECT * FROM $1;`
+	} else {
+		query = `SELECT * FROM $1 WHERE stage = $2;`
+		args = append(args, stage)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
