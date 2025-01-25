@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"collegecm.hamid.net/internal/data"
@@ -118,6 +119,7 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
+		fmt.Println(err)
 		return
 	}
 	mark, err := app.models.Marks.GetRaw(year, id)

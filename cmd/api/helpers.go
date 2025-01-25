@@ -24,7 +24,7 @@ func (app *application) readIDParam(r *http.Request) (string, int64, error) {
 	}
 	params := r.PathValue("id")
 	id, err := strconv.ParseInt(params, 10, 64)
-	if err != nil || id < 1 {
+	if err != nil || id < 0 {
 		return "", -1, errors.New("invalid id parameter")
 	}
 	return year, id, nil
