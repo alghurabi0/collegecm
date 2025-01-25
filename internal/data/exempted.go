@@ -30,14 +30,18 @@ type ExemptedModel struct {
 	DB *sql.DB
 }
 
-func (m ExemptedModel) Insert(exempted *Exempted) error {
-	query := `
-        INSERT INTO exempted (
+func (m ExemptedModel) Insert(year string, exempted *Exempted) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("exempted_%s", year)
+	query := fmt.Sprintf(`
+        INSERT INTO %s (
 		student_id,
 		subject_id
 		) 
         VALUES ($1, $2)
-        RETURNING id, created_at`
+        RETURNING id, created_at`, tableName)
 	args := []interface{}{
 		exempted.StudentId,
 		exempted.SubjectId,
@@ -93,14 +97,22 @@ func (m ExemptedModel) GetAll(year, stage string) ([]*Exempted, error) {
 	return exempteds, nil
 }
 
-func (m ExemptedModel) Get(id int64) (*Exempted, error) {
-	query := `
+func (m ExemptedModel) Get(year string, id int64) (*Exempted, error) {
+	if id < 0 {
+		return nil, ErrRecordNotFound
+	}
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	exemptedTable := fmt.Sprintf("exempted_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT c.id, s.name AS student_name, sub.name AS subject_name
-	FROM exempted c
-	JOIN students s ON c.student_id = s.id
-	JOIN subjects sub ON c.subject.id = sub.id
-	WHERE c.id = $1;
-	`
+	FROM %s c
+	JOIN %s s ON c.student_id = s.id
+	JOIN %s sub ON c.subject.id = sub.id
+	WHERE c.id = $1;`, exemptedTable, studentsTable, subjectsTable)
 	var exempted Exempted
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -147,14 +159,22 @@ func (m ExemptedModel) Find(student_id, subject_id int64) (*Exempted, error) {
 	return &exempted, nil
 }
 
-func (m ExemptedModel) GetSubjects(student_id int64) ([]*Exempted, error) {
-	query := `
+func (m ExemptedModel) GetSubjects(year string, student_id int64) ([]*Exempted, error) {
+	if student_id < 0 {
+		return nil, ErrRecordNotFound
+	}
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	exemptedTable := fmt.Sprintf("exempted_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT c.id, s.name AS student_name, sub.name AS subject_name
-	FROM exempted c
-	JOIN students s ON c.student_id = s.id
-	JOIN subjects sub ON c.subject.id = sub.id
-	c.student_id = $1;
-	`
+	FROM %s c
+	JOIN %s s ON c.student_id = s.id
+	JOIN %s sub ON c.subject.id = sub.id
+	c.student_id = $1;`, exemptedTable, studentsTable, subjectsTable)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	rows, err := m.DB.QueryContext(ctx, query, student_id)
@@ -182,14 +202,22 @@ func (m ExemptedModel) GetSubjects(student_id int64) ([]*Exempted, error) {
 	return exempteds, nil
 }
 
-func (m ExemptedModel) GetStudents(subject_id int64) ([]*Exempted, error) {
-	query := `
+func (m ExemptedModel) GetStudents(year string, subject_id int64) ([]*Exempted, error) {
+	if subject_id < 0 {
+		return nil, ErrRecordNotFound
+	}
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	exemptedTable := fmt.Sprintf("exempted_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT c.id, s.name AS student_name, sub.name AS subject_name
-	FROM exempted c
-	JOIN students s ON c.student_id = s.id
-	JOIN subjects sub ON c.subject.id = sub.id
-	c.subject_id = $1;
-	`
+	FROM %s c
+	JOIN %s s ON c.student_id = s.id
+	JOIN %s sub ON c.subject.id = sub.id
+	c.subject_id = $1;`, exemptedTable, studentsTable, subjectsTable)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	rows, err := m.DB.QueryContext(ctx, query, subject_id)
@@ -217,13 +245,17 @@ func (m ExemptedModel) GetStudents(subject_id int64) ([]*Exempted, error) {
 	return exempteds, nil
 }
 
-func (m ExemptedModel) Delete(id int64) error {
-	if id < 1 {
+func (m ExemptedModel) Delete(year string, id int64) error {
+	if id < 0 {
 		return ErrRecordNotFound
 	}
-	query := `
-	DELETE FROM exempted
-	WHERE id = $1`
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("exempted_%s", year)
+	query := fmt.Sprintf(`
+	DELETE FROM %s
+	WHERE id = $1`, tableName)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	result, err := m.DB.ExecContext(ctx, query, id)

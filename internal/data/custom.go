@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -18,40 +19,41 @@ type CustomModel struct {
 	DB *sql.DB
 }
 
-func (c CustomModel) GetStudentData(id int64) (*Custom, error) {
-	carryoverQ := `
+func (c CustomModel) GetStudentData(year string, id int64) (*Custom, error) {
+	carryoverTablename := fmt.Sprintf("carryovers_%s", year)
+	exemptedTablename := fmt.Sprintf("exempted_%s", year)
+	marksTablename := fmt.Sprintf("marks_%s", year)
+	subjectsTablename := fmt.Sprintf("subjects_%s", year)
+	studentsTablename := fmt.Sprintf("students_%s", year)
+
+	carryoverQ := fmt.Sprintf(`
 	SELECT c.id, s.subject_name
-	FROM carryovers c
+	FROM %s c
 	JOIN subjects s ON c.subject_id = s.subject_id
-	WHERE c.student_id = $1;
-	`
-	exemptedQ := `
+	WHERE c.student_id = $1;`, carryoverTablename)
+	exemptedQ := fmt.Sprintf(`
 	SELECT e.id, s.subject_name
-	FROM exempted e
+	FROM %s e
 	JOIN subjects s ON e.subject_id = s.subject_id
-	WHERE e.student_id = $1;
-	`
-	marksQ := `
+	WHERE e.student_id = $1;`, exemptedTablename)
+	marksQ := fmt.Sprintf(`
 	SELECT
 	m.id, s.subject_name, s.max_semester_mark, m.semester_mark, s.max_final_exam, m.final_mark
-	FROM marks m
+	FROM %s m
 	JOIN subjects s ON m.subject_id = s.subject_id
-	WHERE m.student_id = $1;
-	`
-	subjectsByStageQ := `
+	WHERE m.student_id = $1;`, marksTablename)
+	subjectsByStageQ := fmt.Sprintf(`
 	SELECT subject_id, subject_name
-	FROM subjects
+	FROM %s
 	WHERE stage = (
 		SELECT stage
 		FROM students
 		WHERE student_id = $1
-	);
-	`
-	studentInfoQ := `
+	);`, subjectsTablename)
+	studentInfoQ := fmt.Sprintf(`
 	SELECT student_id, student_name, stage
-	FROM students
-	WHERE student_id = $1;
-	`
+	FROM %s
+	WHERE student_id = $1;`, studentsTablename)
 	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()

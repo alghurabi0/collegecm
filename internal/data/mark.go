@@ -38,16 +38,20 @@ type MarkModel struct {
 	DB *sql.DB
 }
 
-func (m MarkModel) Insert(mark *Mark) error {
-	query := `
-        INSERT INTO marks (
+func (m MarkModel) Insert(year string, mark *Mark) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("marks_%s", year)
+	query := fmt.Sprintf(`
+        INSERT INTO %s (
 		student_id,
 		subject_id,
 		semester_mark,
 		final_mark
 		) 
         VALUES ($1, $2, $3, $4)
-        RETURNING id, created_at`
+        RETURNING id, created_at`, tableName)
 	args := []interface{}{
 		mark.StudentId,
 		mark.SubjectId,
@@ -115,8 +119,14 @@ func (m MarkModel) GetAll(year, stage string) ([]*Mark, error) {
 	return marks, nil
 }
 
-func (m MarkModel) Get(id int64) (*Mark, error) {
-	query := `
+func (m MarkModel) Get(year string, id int64) (*Mark, error) {
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	marksTable := fmt.Sprintf("marks_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT
 	c.id,
 	s.student_name AS student_name,
@@ -125,11 +135,10 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 	sub.max_semester_mark AS max_semester_mark,
 	c.final_mark,
 	sub.max_final_exam AS max_final_exam
-	FROM marks c
-	JOIN students s ON c.student_id = s.student_id
-	JOIN subjects sub ON c.subject_id = sub.subject_id
-	WHERE c.id = $1;
-	`
+	FROM %s c
+	JOIN %s s ON c.student_id = s.student_id
+	JOIN %s sub ON c.subject_id = sub.subject_id
+	WHERE c.id = $1;`, marksTable, studentsTable, subjectsTable)
 	var mark Mark
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -153,8 +162,12 @@ func (m MarkModel) Get(id int64) (*Mark, error) {
 	return &mark, nil
 }
 
-func (m MarkModel) GetRaw(id int64) (*Mark, error) {
-	query := `SELECT id, student_id, subject_id, semester_mark, final_mark from marks WHERE id = $1;`
+func (m MarkModel) GetRaw(year string, id int64) (*Mark, error) {
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	marksTable := fmt.Sprintf("marks_%s", year)
+	query := fmt.Sprintf(`SELECT id, student_id, subject_id, semester_mark, final_mark from %s WHERE id = $1;`, marksTable)
 	var mark Mark
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -176,11 +189,15 @@ func (m MarkModel) GetRaw(id int64) (*Mark, error) {
 	return &mark, nil
 }
 
-func (m MarkModel) Update(mark *Mark) error {
-	query := `
-	UPDATE marks
+func (m MarkModel) Update(year string, mark *Mark) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	marksTable := fmt.Sprintf("marks_%s", year)
+	query := fmt.Sprintf(`
+	UPDATE %s
 	SET student_id = $2, subject_id = $3, semester_mark = $4, final_mark = $5
-	WHERE id = $1`
+	WHERE id = $1`, marksTable)
 	args := []interface{}{
 		&mark.Id,
 		&mark.StudentId,
@@ -194,13 +211,17 @@ func (m MarkModel) Update(mark *Mark) error {
 	return err
 }
 
-func (m MarkModel) Delete(id int64) error {
-	if id < 1 {
+func (m MarkModel) Delete(year string, id int64) error {
+	if id < 0 {
 		return ErrRecordNotFound
 	}
-	query := `
-	DELETE FROM marks
-	WHERE id = $1`
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("marks_%s", year)
+	query := fmt.Sprintf(`
+	DELETE FROM %s
+	WHERE id = $1`, tableName)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	result, err := m.DB.ExecContext(ctx, query, id)

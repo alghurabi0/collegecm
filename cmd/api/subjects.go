@@ -37,12 +37,12 @@ func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
 // response.
 func (app *application) getSubjectHandler(w http.ResponseWriter, r *http.Request) {
 	//id
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	subject, err := app.models.Subjects.Get(id)
+	subject, err := app.models.Subjects.Get(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -59,6 +59,11 @@ func (app *application) getSubjectHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Request) {
+	year, err := app.readYearParam(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
 	// Declare an anonymous struct to hold the information that we expect to be in the
 	// HTTP request body (note that the field names and types in the struct are a subset
 	// of the Movie struct that we created earlier). This struct will be our *target
@@ -84,7 +89,7 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 	// struct as the target decode destination. If there was an error during decoding,
 	// we also use our generic errorResponse() helper to send the client a 400 Bad
 	// Request response containing the error message.
-	err := app.readJSON(w, r, &input)
+	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		fmt.Println(err)
@@ -113,7 +118,7 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Subjects.Insert(subject)
+	err = app.models.Subjects.Insert(year, subject)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -132,12 +137,12 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	subject, err := app.models.Subjects.Get(id)
+	subject, err := app.models.Subjects.Get(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -213,7 +218,7 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Subjects.Update(subject)
+	err = app.models.Subjects.Update(year, subject)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -226,14 +231,14 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteSubject(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 	// Delete the movie from the database, sending a 404 Not Found response to the
 	// client if there isn't a matching record.
-	err = app.models.Subjects.Delete(id)
+	err = app.models.Subjects.Delete(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -282,7 +287,7 @@ func (app *application) importSubjects(w http.ResponseWriter, r *http.Request) {
 			allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
 			continue
 		}
-		err = app.models.Subjects.Insert(subject)
+		err = app.models.Subjects.Insert("", subject)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return

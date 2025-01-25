@@ -33,13 +33,12 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getStudent(w http.ResponseWriter, r *http.Request) {
-	//id
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	student, err := app.models.Students.Get(id)
+	student, err := app.models.Students.Get(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -56,13 +55,18 @@ func (app *application) getStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
+	year, err := app.readYearParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
 	var input struct {
 		StudentName string `json:"student_name"`
 		Stage       string `json:"stage"`
 		StudentId   int    `json:"student_id"`
 		State       string `json:"state"`
 	}
-	err := app.readJSON(w, r, &input)
+	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
@@ -78,7 +82,7 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Students.Insert(student)
+	err = app.models.Students.Insert(year, student)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -90,12 +94,12 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	student, err := app.models.Students.Get(id)
+	student, err := app.models.Students.Get(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -133,7 +137,7 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Students.Update(student)
+	err = app.models.Students.Update(year, student)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -145,12 +149,12 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	err = app.models.Students.Delete(id)
+	err = app.models.Students.Delete(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -198,7 +202,7 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 			allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
 			continue
 		}
-		err = app.models.Students.Insert(student)
+		err = app.models.Students.Insert("", student)
 		if err != nil {
 			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
 		}

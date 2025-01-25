@@ -34,12 +34,12 @@ func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getExempted(w http.ResponseWriter, r *http.Request) {
 	//id
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	exempted, err := app.models.Exempteds.Get(id)
+	exempted, err := app.models.Exempteds.Get(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -94,12 +94,12 @@ func (app *application) findExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	exempteds, err := app.models.Exempteds.GetSubjects(id)
+	exempteds, err := app.models.Exempteds.GetSubjects(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -116,12 +116,12 @@ func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) getStudentsExempteds(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	exempteds, err := app.models.Exempteds.GetStudents(id)
+	exempteds, err := app.models.Exempteds.GetStudents(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -138,11 +138,16 @@ func (app *application) getStudentsExempteds(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
+	year, err := app.readYearParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
 	var input struct {
 		StudentId int64 `json:"student_id"`
 		SubjectId int64 `json:"subject_id"`
 	}
-	err := app.readJSON(w, r, &input)
+	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
@@ -156,17 +161,17 @@ func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	err = app.models.Exempteds.Insert(exempted)
+	err = app.models.Exempteds.Insert(year, exempted)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	student, err := app.models.Students.Get(exempted.StudentId)
+	student, err := app.models.Students.Get(year, exempted.StudentId)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	subject, err := app.models.Subjects.Get(exempted.SubjectId)
+	subject, err := app.models.Subjects.Get(year, exempted.SubjectId)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -180,12 +185,12 @@ func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteExempted(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	err = app.models.Exempteds.Delete(id)
+	err = app.models.Exempteds.Delete(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

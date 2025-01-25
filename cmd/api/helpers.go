@@ -17,13 +17,25 @@ type envelope map[string]interface{}
 
 // Retrieve the "id" URL parameter from the current request context, then convert it to
 // an integer and return it. If the operation isn't successful, return 0 and an error.
-func (app *application) readIDParam(r *http.Request) (int64, error) {
+func (app *application) readIDParam(r *http.Request) (string, int64, error) {
+	year := r.PathValue("year")
+	if strings.TrimSpace(year) == "" {
+		return "", -1, errors.New("empty year parameter")
+	}
 	params := r.PathValue("id")
 	id, err := strconv.ParseInt(params, 10, 64)
 	if err != nil || id < 1 {
-		return 0, errors.New("invalid id parameter")
+		return "", -1, errors.New("invalid id parameter")
 	}
-	return id, nil
+	return year, id, nil
+}
+
+func (app *application) readYearParam(r *http.Request) (string, error) {
+	year := r.PathValue("year")
+	if strings.TrimSpace(year) == "" {
+		return "", errors.New("empty year parameter")
+	}
+	return year, nil
 }
 
 func (app *application) readParams(r *http.Request) (string, string, error) {

@@ -50,9 +50,13 @@ type SubjectModel struct {
 }
 
 // Add a placeholder method for inserting a new record in the movies table.
-func (m SubjectModel) Insert(subject *Subject) error {
-	query := `
-        INSERT INTO subjects (
+func (m SubjectModel) Insert(year string, subject *Subject) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
+        INSERT INTO %s (
 		subject_id,
 		subject_name,
 		subject_name_english,
@@ -68,7 +72,7 @@ func (m SubjectModel) Insert(subject *Subject) error {
 		ministerial
 		) 
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-        RETURNING created_at`
+        RETURNING created_at`, tableName)
 	// Create an args slice containing the values for the placeholder parameters from
 	// the movie struct. Declaring this slice immediately next to our SQL query helps to
 	// make it nice and clear *what values are being used where* in the query.
@@ -151,19 +155,23 @@ func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
 }
 
 // Add a placeholder method for fetching a specific record from the movies table.
-func (m SubjectModel) Get(id int64) (*Subject, error) {
+func (m SubjectModel) Get(year string, id int64) (*Subject, error) {
 	// The PostgreSQL bigserial type that we're using for the movie ID starts
 	// auto-incrementing at 1 by default, so we know that no movies will have ID values
 	// less than that. To avoid making an unnecessary database call, we take a shortcut
 	// and return an ErrRecordNotFound error straight away.
-	if id < 1 {
+	if id < 0 {
 		return nil, ErrRecordNotFound
 	}
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
 	// Define the SQL query for retrieving the movie data.
-	query := `
+	tableName := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT subject_id, subject_name, subject_name_english, stage, semester, department, max_theory_mark, max_lab_mark, max_semester_mark, max_final_exam, credits, active, ministerial
-	FROM subjects
-	WHERE subject_id = $1`
+	FROM %s
+	WHERE subject_id = $1`, tableName)
 	// Declare a Movie struct to hold the data returned by the query.
 	var subject Subject
 	// Execute the query using the QueryRow() method, passing in the provided id value
@@ -203,11 +211,15 @@ func (m SubjectModel) Get(id int64) (*Subject, error) {
 }
 
 // Add a placeholder method for updating a specific record in the movies table.
-func (m SubjectModel) Update(subject *Subject) error {
-	query := `
-	UPDATE subjects
+func (m SubjectModel) Update(year string, subject *Subject) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
+	UPDATE %s
 	SET subject_id = $1, subject_name = $2, subject_name_english = $3, stage = $4, semester = $5, department = $6, max_theory_mark = $7, max_lab_mark = $8, max_semester_mark = $9, max_final_exam = $10, credits = $11, active = $12, ministerial = $13
-	WHERE subject_id = $1`
+	WHERE subject_id = $1`, tableName)
 	// Create an args slice containing the values for the placeholder parameters.
 	args := []interface{}{
 		subject.ID,
@@ -233,14 +245,18 @@ func (m SubjectModel) Update(subject *Subject) error {
 }
 
 // Add a placeholder method for deleting a specific record from the movies table.
-func (m SubjectModel) Delete(id int64) error {
-	if id < 1 {
+func (m SubjectModel) Delete(year string, id int64) error {
+	if id < 0 {
 		return ErrRecordNotFound
 	}
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("subjects_%s", year)
 	// Construct the SQL query to delete the record.
-	query := `
-	DELETE FROM subjects
-	WHERE subject_id = $1`
+	query := fmt.Sprintf(`
+	DELETE FROM %s
+	WHERE subject_id = $1`, tableName)
 	// Execute the SQL query using the Exec() method, passing in the id variable as
 	// the value for the placeholder parameter. The Exec() method returns a sql.Result
 	// object.

@@ -8,13 +8,13 @@ import (
 )
 
 func (app *application) getStudentData(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
+	year, id, err := app.readIDParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
 
-	studentData, err := app.models.Customs.GetStudentData(id)
+	studentData, err := app.models.Customs.GetStudentData(year, id)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

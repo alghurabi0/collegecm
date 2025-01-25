@@ -33,16 +33,20 @@ type StudentModel struct {
 	DB *sql.DB
 }
 
-func (m StudentModel) Insert(student *Student) error {
-	query := `
-        INSERT INTO students (
+func (m StudentModel) Insert(year string, student *Student) error {
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf(`
+        INSERT INTO %s (
 		student_name,
 		stage,
 		student_id,
 		state
 		) 
         VALUES ($1, $2, $3, $4)
-        RETURNING created_at, seq_in_college`
+        RETURNING created_at, seq_in_college`, tableName)
 	args := []interface{}{student.StudentName,
 		student.Stage,
 		student.StudentId,
@@ -95,15 +99,16 @@ func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
 	return students, nil
 }
 
-func (m StudentModel) Get(id int64) (*Student, error) {
-	if id < 1 {
+func (m StudentModel) Get(year string, id int64) (*Student, error) {
+	if id < 0 {
 		return nil, ErrRecordNotFound
 	}
 	// Define the SQL query for retrieving the movie data.
-	query := `
+	tableName := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf(`
 	SELECT seq_in_college, student_name, stage, student_id, state, created_at
-	FROM students
-	WHERE student_id = $1`
+	FROM %s
+	WHERE student_id = $1`, tableName)
 	var student Student
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -126,11 +131,18 @@ func (m StudentModel) Get(id int64) (*Student, error) {
 	return &student, nil
 }
 
-func (m StudentModel) Update(student *Student) error {
-	query := `
-	UPDATE students
+func (m StudentModel) Update(year string, student *Student) error {
+	if student.StudentId < 0 {
+		return ErrRecordNotFound
+	}
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf(`
+	UPDATE %s
 	SET student_name = $1, stage = $2, state = $4
-	WHERE student_id = $3`
+	WHERE student_id = $3`, tableName)
 	args := []interface{}{
 		&student.StudentName,
 		&student.Stage,
@@ -143,13 +155,17 @@ func (m StudentModel) Update(student *Student) error {
 	return err
 }
 
-func (m StudentModel) Delete(id int64) error {
-	if id < 1 {
+func (m StudentModel) Delete(year string, id int64) error {
+	if id < 0 {
 		return ErrRecordNotFound
 	}
-	query := `
-	DELETE FROM students
-	WHERE student_id = $1`
+	if strings.TrimSpace(year) == "" {
+		return errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf(`
+	DELETE FROM %s
+	WHERE student_id = $1`, tableName)
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	result, err := m.DB.ExecContext(ctx, query, id)
