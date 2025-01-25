@@ -26,7 +26,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /v1/subjects/{id}", app.updateSubject)
 	router.HandleFunc("DELETE /v1/subjects/{id}", app.deleteSubject)
 	// students
-	router.HandleFunc("GET /v1/students", app.getStudents)
+	router.HandleFunc("GET /v1/students/{year}/{stage}", app.getStudents)
 	router.HandleFunc("GET /v1/students/{id}", app.getStudent)
 	router.HandleFunc("POST /v1/students", app.createStudent)
 	router.HandleFunc("POST /v1/students/import", app.importstudents)

@@ -26,6 +26,44 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 	return id, nil
 }
 
+func (app *application) readParams(r *http.Request) (string, string, error) {
+	param1 := r.PathValue("year")
+	if strings.TrimSpace(param1) == "" {
+		return "", "", errors.New("empty year parameter")
+	}
+	param2 := r.PathValue("stage")
+	switch strings.TrimSpace(param2) {
+	case "1":
+		param2 = "الاولى"
+		break
+	case "2":
+		param2 = "الثانية"
+		break
+	case "3":
+		param2 = "الثالثة"
+		break
+	case "4":
+		param2 = "الرابعة"
+		break
+	case "5":
+		param2 = "الخامسة"
+		break
+	case "6":
+		param2 = "السادسة"
+		break
+	case "all":
+		param2 = "all"
+		break
+	default:
+		param2 = ""
+		break
+	}
+	if strings.TrimSpace(param2) == "" {
+		return "", "", errors.New("empty stage parameter")
+	}
+	return param1, param2, nil
+}
+
 // Define a writeJSON() helper for sending responses. This takes the destination
 // http.ResponseWriter, the HTTP status code to send, the data to encode to JSON, and a
 // header map containing any additional HTTP headers we want to include in the response.

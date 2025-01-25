@@ -16,6 +16,7 @@ type Student struct {
 	StudentId    int       `json:"student_id" csv:"student_id"`
 	State        string    `json:"state" csv:"state"`
 	CreatedAt    time.Time `json:"-" csv:"-"`
+	Year         string    `json:"-"`
 }
 
 func ValidateStudent(v *validator.Validator, student *Student) {
@@ -50,11 +51,11 @@ func (m StudentModel) Insert(student *Student) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&student.CreatedAt, &student.SeqInCollege)
 }
 
-func (m StudentModel) GetAll() ([]*Student, error) {
-	query := `SELECT * FROM students`
+func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
+	query := `SELECT * FROM students WHERE year = $1 AND stage = $2;`
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, year, stage)
 	if err != nil {
 		return nil, err
 	}
@@ -70,6 +71,7 @@ func (m StudentModel) GetAll() ([]*Student, error) {
 			&student.StudentId,
 			&student.State,
 			&student.CreatedAt,
+			&student.Year,
 		)
 		if err != nil {
 			return nil, err

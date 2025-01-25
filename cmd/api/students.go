@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
-	students, err := app.models.Students.GetAll()
+	year, stage, err := app.readParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	students, err := app.models.Students.GetAll(year, stage)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -199,7 +204,7 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// get all subjects or redirect
-	allStudents, err := app.models.Students.GetAll()
+	allStudents, err := app.models.Students.GetAll("", "")
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
