@@ -33,7 +33,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /v1/students/{id}", app.updateStudent)
 	router.HandleFunc("DELETE /v1/students/{id}", app.deleteStudent)
 	// carryovers
-	router.HandleFunc("GET /v1/carryovers", app.getCarryovers)
+	router.HandleFunc("GET /v1/carryovers/{year}/{stage}", app.getCarryovers)
 	router.HandleFunc("GET /v1/carryovers/{id}", app.getCarryover)
 	router.HandleFunc("GET /v1/carryovers/{student_id}/{subject_id}", app.findCarryover)
 	router.HandleFunc("GET /v1/carryovers/subjects/{id}", app.getSubjectsCarryovers)

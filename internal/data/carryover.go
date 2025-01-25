@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"collegecm.hamid.net/internal/validator"
@@ -46,16 +48,27 @@ func (m CarryoverModel) Insert(carryover *Carryover) error {
 }
 
 // ddd
-func (m CarryoverModel) GetAll() ([]*Carryover, error) {
-	query := `
-	SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name
-	FROM carryovers c
-	JOIN students s ON c.student_id = s.student_id
-	JOIN subjects sub ON c.subject_id = sub.subject_id;
-	`
+func (m CarryoverModel) GetAll(year, stage string) ([]*Carryover, error) {
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	carryoversTable := fmt.Sprintf("carryovers_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
+		SELECT c.id, s.student_name AS student_name, sub.subject_name AS subject_name
+		FROM %s c
+		JOIN %s s ON c.student_id = s.student_id
+		JOIN %s sub ON c.subject_id = sub.subject_id
+	`, carryoversTable, studentsTable, subjectsTable)
+	var args []interface{}
+	if stage != "all" {
+		query += " WHERE s.stage = $1"
+		args = append(args, stage)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}

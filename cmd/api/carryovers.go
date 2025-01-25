@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getCarryovers(w http.ResponseWriter, r *http.Request) {
-	carryovers, err := app.models.Carryovers.GetAll()
+	year, stage, err := app.readParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	carryovers, err := app.models.Carryovers.GetAll(year, stage)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
