@@ -52,7 +52,12 @@ func (m StudentModel) Insert(student *Student) error {
 }
 
 func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
-	query := `SELECT * FROM students WHERE year = $1 AND stage = $2;`
+	query := ``
+	if stage == "all" {
+		query = `SELECT * FROM students WHERE year = $1;`
+	} else {
+		query = `SELECT * FROM students WHERE year = $1 AND stage = $2;`
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	rows, err := m.DB.QueryContext(ctx, query, year, stage)
