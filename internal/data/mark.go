@@ -77,7 +77,7 @@ func (m MarkModel) GetAll(year, stage string) ([]*Mark, error) {
 	sub.max_final_exam AS max_final_exam
 	FROM %s c
 	JOIN %s s ON c.student_id = s.student_id
-	JOIN %s sub ON c.subject_id = sub.subject_id;
+	JOIN %s sub ON c.subject_id = sub.subject_id
 	`, marksTable, studentsTable, subjectsTable)
 	var args []interface{}
 	if stage != "all" {
