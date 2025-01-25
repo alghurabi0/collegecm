@@ -9,7 +9,12 @@ import (
 )
 
 func (app *application) getMarks(w http.ResponseWriter, r *http.Request) {
-	marks, err := app.models.Marks.GetAll()
+	year, stage, err := app.readParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	marks, err := app.models.Marks.GetAll(year, stage)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

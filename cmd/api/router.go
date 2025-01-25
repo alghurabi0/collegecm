@@ -49,7 +49,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("POST /v1/exempteds", app.createExempted)
 	router.HandleFunc("DELETE /v1/exempteds/{id}", app.deleteExempted)
 	// marks
-	router.HandleFunc("GET /v1/marks", app.getMarks)
+	router.HandleFunc("GET /v1/marks/{year}/{stage}", app.getMarks)
 	router.HandleFunc("GET /v1/marks/{id}", app.getMark)
 	router.HandleFunc("POST /v1/marks", app.createMark)
 	router.HandleFunc("PATCH /v1/marks/{id}", app.updateMark)

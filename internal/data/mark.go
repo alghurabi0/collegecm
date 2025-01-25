@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"collegecm.hamid.net/internal/validator"
@@ -57,8 +59,14 @@ func (m MarkModel) Insert(mark *Mark) error {
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&mark.Id, &mark.CreatedAt)
 }
 
-func (m MarkModel) GetAll() ([]*Mark, error) {
-	query := `
+func (m MarkModel) GetAll(year, stage string) ([]*Mark, error) {
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	marksTable := fmt.Sprintf("marks_%s", year)
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	query := fmt.Sprintf(`
 	SELECT
 	c.id,
 	s.student_name AS student_name,
@@ -67,13 +75,18 @@ func (m MarkModel) GetAll() ([]*Mark, error) {
 	sub.max_semester_mark AS max_semester_mark,
 	c.final_mark,
 	sub.max_final_exam AS max_final_exam
-	FROM marks c
-	JOIN students s ON c.student_id = s.student_id
-	JOIN subjects sub ON c.subject_id = sub.subject_id;
-	`
+	FROM %s c
+	JOIN %s s ON c.student_id = s.student_id
+	JOIN %s sub ON c.subject_id = sub.subject_id;
+	`, marksTable, studentsTable, subjectsTable)
+	var args []interface{}
+	if stage != "all" {
+		query += " WHERE s.stage = $1 AND sub.stage = $1"
+		args = append(args, stage)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
