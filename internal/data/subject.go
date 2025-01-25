@@ -26,6 +26,7 @@ type Subject struct {
 	Active             string    `json:"active" csv:"active"`
 	Ministerial        string    `json:"ministerial" csv:"ministerial"`
 	CreatedAt          time.Time `json:"-" csv:"-"`
+	Year               string    `json:"-"`
 }
 
 func ValidateSubject(v *validator.Validator, subject *Subject) {
@@ -134,6 +135,7 @@ func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
 			&subject.Active,
 			&subject.Ministerial,
 			&subject.CreatedAt,
+			&subject.Year,
 		)
 		if err != nil {
 			return nil, err
