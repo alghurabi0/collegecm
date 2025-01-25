@@ -29,27 +29,27 @@ func (c CustomModel) GetStudentData(year string, id int64) (*Custom, error) {
 	carryoverQ := fmt.Sprintf(`
 	SELECT c.id, s.subject_name
 	FROM %s c
-	JOIN subjects s ON c.subject_id = s.subject_id
-	WHERE c.student_id = $1;`, carryoverTablename)
+	JOIN %s s ON c.subject_id = s.subject_id
+	WHERE c.student_id = $1;`, carryoverTablename, subjectsTablename)
 	exemptedQ := fmt.Sprintf(`
 	SELECT e.id, s.subject_name
 	FROM %s e
-	JOIN subjects s ON e.subject_id = s.subject_id
-	WHERE e.student_id = $1;`, exemptedTablename)
+	JOIN %s s ON e.subject_id = s.subject_id
+	WHERE e.student_id = $1;`, exemptedTablename, subjectsTablename)
 	marksQ := fmt.Sprintf(`
 	SELECT
 	m.id, s.subject_name, s.max_semester_mark, m.semester_mark, s.max_final_exam, m.final_mark
 	FROM %s m
-	JOIN subjects s ON m.subject_id = s.subject_id
-	WHERE m.student_id = $1;`, marksTablename)
+	JOIN %s s ON m.subject_id = s.subject_id
+	WHERE m.student_id = $1;`, marksTablename, subjectsTablename)
 	subjectsByStageQ := fmt.Sprintf(`
 	SELECT subject_id, subject_name
 	FROM %s
 	WHERE stage = (
 		SELECT stage
-		FROM students
+		FROM %s
 		WHERE student_id = $1
-	);`, subjectsTablename)
+	);`, subjectsTablename, studentsTablename)
 	studentInfoQ := fmt.Sprintf(`
 	SELECT student_id, student_name, stage
 	FROM %s
