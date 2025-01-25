@@ -97,14 +97,12 @@ func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
 	if strings.TrimSpace(year) == "" {
 		return nil, errors.New("invalid year")
 	}
-	year = fmt.Sprintf("subjects_%s", year)
-	query := ``
+	tableName := fmt.Sprintf("subjects_%s", year)
+	fmt.Println("Querying table:", tableName)
+	query := fmt.Sprintf("SELECT * FROM %s", tableName)
 	var args []interface{}
-	args = append(args, year)
-	if stage == "all" {
-		query = `SELECT * FROM $1;`
-	} else {
-		query = `SELECT * FROM $1 WHERE stage = $2;`
+	if stage != "all" {
+		query += " WHERE stage = $1"
 		args = append(args, stage)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
