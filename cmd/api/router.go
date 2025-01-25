@@ -55,7 +55,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("PATCH /v1/marks/{year}/{id}", app.updateMark)
 	router.HandleFunc("DELETE /v1/marks/{year}/{id}", app.deleteMark)
 	// custom
-	router.HandleFunc("GET /v1/custom/{yaer}/{id}", app.getStudentData)
+	router.HandleFunc("GET /v1/custom/{year}/{id}", app.getStudentData)
 	// general
 	router.HandleFunc("GET /v1/years", app.getYears)
 	// Return the httprouter instance.
