@@ -99,7 +99,6 @@ func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
 		return nil, errors.New("invalid year")
 	}
 	tableName := fmt.Sprintf("subjects_%s", year)
-	fmt.Println("Querying table:", tableName)
 	query := fmt.Sprintf("SELECT * FROM %s", tableName)
 	var args []interface{}
 	if stage != "all" {

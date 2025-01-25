@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	"collegecm.hamid.net/internal/validator"
@@ -52,13 +54,14 @@ func (m StudentModel) Insert(student *Student) error {
 }
 
 func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
-	query := ``
+	if strings.TrimSpace(year) == "" {
+		return nil, errors.New("invalid year")
+	}
+	tableName := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf("SELECT * FROM %s", tableName)
 	var args []interface{}
-	args = append(args, year)
-	if stage == "all" {
-		query = `SELECT * FROM students WHERE year = $1;`
-	} else {
-		query = `SELECT * FROM students WHERE year = $1 AND stage = $2;`
+	if stage != "all" {
+		query += " WHERE stage = $1"
 		args = append(args, stage)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
