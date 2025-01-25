@@ -69,9 +69,10 @@ func (m SubjectModel) Insert(year string, subject *Subject) error {
 		max_final_exam,
 		credits,
 		active,
-		ministerial
+		ministerial,
+		year
 		) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         RETURNING created_at`, tableName)
 	// Create an args slice containing the values for the placeholder parameters from
 	// the movie struct. Declaring this slice immediately next to our SQL query helps to
@@ -89,6 +90,7 @@ func (m SubjectModel) Insert(year string, subject *Subject) error {
 		subject.Credits,
 		subject.Active,
 		subject.Ministerial,
+		year,
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
