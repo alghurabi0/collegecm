@@ -52,7 +52,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /v1/marks/{year}/{stage}", app.getMarks)
 	router.HandleFunc("GET /v1/mark/{year}/{id}", app.getMark)
 	router.HandleFunc("POST /v1/marks/{year}", app.createMark)
-	router.HandleFunc("PATCH /v1/marks/{yaer}/{id}", app.updateMark)
+	router.HandleFunc("PATCH /v1/marks/{year}/{id}", app.updateMark)
 	router.HandleFunc("DELETE /v1/marks/{year}/{id}", app.deleteMark)
 	// custom
 	router.HandleFunc("GET /v1/custom/{yaer}/{id}", app.getStudentData)
