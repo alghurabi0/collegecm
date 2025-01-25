@@ -19,7 +19,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("OPTIONS /", func(w http.ResponseWriter, r *http.Request) { fmt.Println("options req") })
 	router.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
 	// subjects
-	router.HandleFunc("GET /v1/subjects", app.getSubjects)
+	router.HandleFunc("GET /v1/subjects/{year}/{stage}", app.getSubjects)
 	router.HandleFunc("GET /v1/subjects/{id}", app.getSubjectHandler)
 	router.HandleFunc("POST /v1/subjects", app.createSubjectHandler)
 	router.HandleFunc("POST /v1/subjects/import", app.importSubjects)
