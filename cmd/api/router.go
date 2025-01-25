@@ -20,7 +20,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("GET /v1/healthcheck", app.healthcheckHandler)
 	// subjects
 	router.HandleFunc("GET /v1/subjects/{year}/{stage}", app.getSubjects)
-	router.HandleFunc("GET /v1/subjects/{year}/{id}", app.getSubjectHandler)
+	router.HandleFunc("GET /v1/subject/{year}/{id}", app.getSubjectHandler)
 	router.HandleFunc("POST /v1/subjects/{year}", app.createSubjectHandler)
 	router.HandleFunc("POST /v1/subjects/import", app.importSubjects)
 	router.HandleFunc("PATCH /v1/subjects/{year}/{id}", app.updateSubject)
@@ -42,7 +42,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("DELETE /v1/carryovers/{year}/{id}", app.deleteCarryover)
 	// exempteds
 	router.HandleFunc("GET /v1/exempteds/{year}/{stage}", app.getExempteds)
-	router.HandleFunc("GET /v1/exempteds/{year}/{id}", app.getExempted)
+	router.HandleFunc("GET /v1/exempted/{year}/{id}", app.getExempted)
 	router.HandleFunc("GET /v1/exempteds/find/{student_id}/{subject_id}", app.findExempted)
 	router.HandleFunc("GET /v1/exempteds/subjects/{year}/{id}", app.getSubjectsExempteds)
 	router.HandleFunc("GET /v1/exempteds/students/{year}/{id}", app.getStudentsExempteds)
@@ -50,7 +50,7 @@ func (app *application) routes() http.Handler {
 	router.HandleFunc("DELETE /v1/exempteds/{year}/{id}", app.deleteExempted)
 	// marks
 	router.HandleFunc("GET /v1/marks/{year}/{stage}", app.getMarks)
-	router.HandleFunc("GET /v1/marks/{year}/{id}", app.getMark)
+	router.HandleFunc("GET /v1/mark/{year}/{id}", app.getMark)
 	router.HandleFunc("POST /v1/marks/{year}", app.createMark)
 	router.HandleFunc("PATCH /v1/marks/{yaer}/{id}", app.updateMark)
 	router.HandleFunc("DELETE /v1/marks/{year}/{id}", app.deleteMark)
