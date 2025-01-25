@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
-	exempteds, err := app.models.Exempteds.GetAll()
+	year, stage, err := app.readParams(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	exempteds, err := app.models.Exempteds.GetAll(year, stage)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
