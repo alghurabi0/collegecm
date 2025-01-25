@@ -63,7 +63,7 @@ func (m ExemptedModel) GetAll(year, stage string) ([]*Exempted, error) {
 	`, exemptedTable, studentsTable, subjectsTable)
 	var args []interface{}
 	if stage != "all" {
-		query += " WHERE s.stage = $1 AND sub.stage = $1"
+		query += " WHERE s.stage = $1"
 		args = append(args, stage)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
