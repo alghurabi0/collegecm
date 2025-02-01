@@ -82,6 +82,8 @@ func main() {
 	// the logger.
 	sessionManager := scs.New()
 	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Cookie.SameSite = 0
+	sessionManager.Cookie.Secure = true
 
 	sessionManager.Lifetime = 12 * time.Hour
 	app := &application{
