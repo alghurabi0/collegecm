@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"collegecm.hamid.net/internal/data"
-	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -81,7 +81,8 @@ func main() {
 	// Declare an instance of the application struct, containing the config struct and
 	// the logger.
 	sessionManager := scs.New()
-	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Store = postgresstore.New(db)
+
 	sessionManager.Lifetime = 12 * time.Hour
 	app := &application{
 		config: cfg,
