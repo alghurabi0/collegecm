@@ -25,7 +25,17 @@ func (app *application) getPrivileges(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"privileges": privileges}, nil)
+	user, err := app.models.Users.Get(userId)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelope{"privileges": privileges, "user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
