@@ -41,7 +41,7 @@ func (u UserModel) Insert(user *User) error {
 }
 
 func (u UserModel) GetAll() ([]*User, error) {
-	query := `SELECT * FROM %s users`
+	query := `SELECT * FROM users`
 	var args []interface{}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
