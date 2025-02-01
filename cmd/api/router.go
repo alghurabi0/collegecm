@@ -11,8 +11,8 @@ func (app *application) routes() http.Handler {
 	// Initialize a new httprouter router instance.
 	router := http.NewServeMux()
 	// middleware chain
-	standard := alice.New(app.secureHeaders)
-	auth := alice.New(app.sessionManager.LoadAndSave, app.isLoggedIn)
+	standard := alice.New(app.sessionManager.LoadAndSave, app.secureHeaders)
+	auth := alice.New(app.isLoggedIn)
 	// Register the relevant methods, URL patterns and handler functions for our
 	// endpoints using the HandlerFunc() method. Note that http.MethodGet and
 	// http.MethodPost are constants which equate to the strings "GET" and "POST"
