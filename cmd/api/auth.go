@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"collegecm.hamid.net/internal/data"
@@ -40,7 +41,7 @@ func (app *application) login(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	app.sessionManager.Put(r.Context(), "userID", user.ID)
+	app.sessionManager.Put(r.Context(), "userID", int(user.ID))
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -60,6 +61,7 @@ func (app *application) logout(w http.ResponseWriter, r *http.Request) {
 func (app *application) authStatus(w http.ResponseWriter, r *http.Request) {
 	userId := app.sessionManager.GetInt(r.Context(), "userID")
 	if userId == 0 {
+		fmt.Println("user not logged in")
 		app.notFoundResponse(w, r)
 		return
 	}
