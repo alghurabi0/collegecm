@@ -34,7 +34,7 @@ func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getExempted(w http.ResponseWriter, r *http.Request) {
 	//id
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -94,7 +94,7 @@ func (app *application) findExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -116,7 +116,7 @@ func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) getStudentsExempteds(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -185,7 +185,7 @@ func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteExempted(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

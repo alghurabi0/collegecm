@@ -34,7 +34,7 @@ func (app *application) getCarryovers(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getCarryover(w http.ResponseWriter, r *http.Request) {
 	//id
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -94,7 +94,7 @@ func (app *application) findCarryover(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getSubjectsCarryovers(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -116,7 +116,7 @@ func (app *application) getSubjectsCarryovers(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) getStudentsCarryovers(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -185,7 +185,7 @@ func (app *application) createCarryover(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) deleteCarryover(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

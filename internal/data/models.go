@@ -21,6 +21,9 @@ type Models struct {
 	Marks      MarkModel
 	Customs    CustomModel
 	Years      YearModel
+	Users      UserModel
+	Privileges PrivilegeModel
+	Tables     TableModel
 }
 
 // For ease of use, we also add a New() method which returns a Models struct containing
@@ -34,5 +37,8 @@ func NewModels(db *sql.DB) Models {
 		Marks:      MarkModel{DB: db},
 		Customs:    CustomModel{DB: db},
 		Years:      YearModel{DB: db},
+		Users:      UserModel{DB: db},
+		Privileges: PrivilegeModel{DB: db},
+		Tables:     TableModel{DB: db},
 	}
 }

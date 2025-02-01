@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"collegecm.hamid.net/internal/data"
 	"github.com/gocarina/gocsv"
 )
 
@@ -17,7 +18,7 @@ type envelope map[string]interface{}
 
 // Retrieve the "id" URL parameter from the current request context, then convert it to
 // an integer and return it. If the operation isn't successful, return 0 and an error.
-func (app *application) readIDParam(r *http.Request) (string, int64, error) {
+func (app *application) readIdYearParam(r *http.Request) (string, int64, error) {
 	year := r.PathValue("year")
 	if strings.TrimSpace(year) == "" {
 		return "", -1, errors.New("empty year parameter")
@@ -28,6 +29,15 @@ func (app *application) readIDParam(r *http.Request) (string, int64, error) {
 		return "", -1, errors.New("invalid id parameter")
 	}
 	return year, id, nil
+}
+
+func (app *application) readIdParam(r *http.Request) (int64, error) {
+	params := r.PathValue("id")
+	id, err := strconv.ParseInt(params, 10, 64)
+	if err != nil || id < 0 {
+		return -1, errors.New("invalid id parameter")
+	}
+	return id, nil
 }
 
 func (app *application) readYearParam(r *http.Request) (string, error) {
@@ -156,4 +166,20 @@ func (app *application) processFile(file *multipart.File, data interface{}) erro
 		return err
 	}
 	return nil
+}
+
+func (app *application) isLoggedInCheck(r *http.Request) bool {
+	isLoggedIn, ok := r.Context().Value(isLoggedInContextKey).(bool)
+	if !ok {
+		return false
+	}
+	return isLoggedIn
+}
+
+func (app *application) getUserFromContext(r *http.Request) (*data.User, error) {
+	user, ok := r.Context().Value(userModelContextKey).(*data.User)
+	if !ok {
+		return nil, errors.New("can't get user object from context")
+	}
+	return user, nil
 }

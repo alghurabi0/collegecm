@@ -33,7 +33,7 @@ func (app *application) getMarks(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getMark(w http.ResponseWriter, r *http.Request) {
 	//id
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -116,7 +116,7 @@ func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		fmt.Println(err)
@@ -174,7 +174,7 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteMark(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIDParam(r)
+	year, id, err := app.readIdYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

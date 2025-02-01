@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"collegecm.hamid.net/internal/data"
+	"github.com/alexedwards/scs/mysqlstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
@@ -40,9 +42,10 @@ type config struct {
 // and middleware. At the moment this only contains a copy of the config struct and a
 // logger, but it will grow to include a lot more as our build progresses.
 type application struct {
-	config config
-	logger *log.Logger
-	models data.Models
+	config         config
+	logger         *log.Logger
+	models         data.Models
+	sessionManager *scs.SessionManager
 }
 
 func main() {
@@ -77,6 +80,9 @@ func main() {
 	logger.Printf("database connection pool established")
 	// Declare an instance of the application struct, containing the config struct and
 	// the logger.
+	sessionManager := scs.New()
+	sessionManager.Store = mysqlstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
 	app := &application{
 		config: cfg,
 		logger: logger,
