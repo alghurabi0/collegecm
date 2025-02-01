@@ -85,9 +85,10 @@ func main() {
 
 	sessionManager.Lifetime = 12 * time.Hour
 	app := &application{
-		config: cfg,
-		logger: logger,
-		models: data.NewModels(db),
+		config:         cfg,
+		logger:         logger,
+		models:         data.NewModels(db),
+		sessionManager: sessionManager,
 	}
 	// Declare a HTTP server with some sensible timeout settings, which listens on the
 	// port provided in the config struct and uses the servemux we created above as the
