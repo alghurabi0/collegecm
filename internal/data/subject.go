@@ -101,9 +101,6 @@ func (m SubjectModel) Insert(year string, subject *Subject) error {
 }
 
 func (m SubjectModel) GetAll(year, stage string) ([]*Subject, error) {
-	if strings.TrimSpace(year) == "" {
-		return nil, errors.New("invalid year")
-	}
 	tableName := fmt.Sprintf("subjects_%s", year)
 	query := fmt.Sprintf("SELECT * FROM %s", tableName)
 	var args []interface{}

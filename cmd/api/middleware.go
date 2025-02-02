@@ -9,6 +9,10 @@ type contextKey string
 
 const isLoggedInContextKey = contextKey("isLoggedIn")
 const userModelContextKey = contextKey("userStruct")
+const yearContextKey = contextKey("year")
+const stageContextKey = contextKey("stage")
+
+//const stagesContextKey = contextKey("stages")
 
 func (app *application) secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +47,37 @@ func (app *application) isLoggedIn(next http.Handler) http.Handler {
 		}
 		ctx := context.WithValue(r.Context(), isLoggedInContextKey, true)
 		ctx = context.WithValue(ctx, userModelContextKey, user)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) subjectsAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		year, err := app.readYearParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		stage, err := app.readStageParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		tableName := "subjects" + year
+		user, err := app.getUserFromContext(r)
+		privilege, err := app.models.Privileges.CheckAccess(int(user.ID), tableName, stage)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !privilege.CanRead {
+			app.unauthorized(w, r)
+			return
+		}
+		ctx := context.WithValue(r.Context(), yearContextKey, year)
+		ctx = context.WithValue(ctx, stageContextKey, stage)
+		//ctx = context.WithValue(ctx, stagesContextKey, stages)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})

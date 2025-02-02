@@ -17,19 +17,21 @@ type Privilege struct {
 	CanRead   bool      `json:"can_read"`
 	CanWrite  bool      `json:"can_write"`
 	CreatedAt time.Time `json:"created_at"`
+	TableName string    `json:"-"`
 }
 
 func ValidatePrivilege(v *validator.Validator, privilege *Privilege) {
 	v.Check(privilege.UserId > 0, "المستخدم", "يجب تزويد المعلومات")
 	v.Check(privilege.Year != "", "الجدول", "يجب تزويد المعلومات")
-}
-
-func ValidatePrivilegeFull(v *validator.Validator, privilege *Privilege) {
-	v.Check(privilege.TableId >= -1, "الجدول", "يجب تزويد المعلومات")
-	v.Check(privilege.Stage != "", "المرحلة", "يجب تزويد المعلومات")
-	v.Check(privilege.SubjectId >= -1, "المادة", "يجب تزويد المعلومات")
+	v.Check(privilege.TableId == -1 || privilege.TableId > 0, "الجدول", "يجب تزويد المعلومات")
+	v.Check(privilege.Stage != "" && (privilege.Stage == "الاولى" || privilege.Stage == "الثانية" ||
+		privilege.Stage == "الثالثة" || privilege.Stage == "الرابعة" ||
+		privilege.Stage == "الخامسة" || privilege.Stage == "السادسة" ||
+		privilege.Stage == "all"), "المرحلة", "يجب تزويد المعلومات")
+	v.Check(privilege.SubjectId == -1 || privilege.SubjectId > 0, "المادة", "يجب تزويد المعلومات")
 	v.Check(privilege.CanRead || !privilege.CanRead, "الصلاحيات", "يجب تزويد المعلومات")
 	v.Check(privilege.CanWrite || !privilege.CanWrite, "الصلاحيات", "يجب تزويد المعلومات")
+
 }
 
 type PrivilegeModel struct {
@@ -106,4 +108,32 @@ func (p PrivilegeModel) Delete(userId int, tableId int, stage sql.NullString, su
 		return ErrRecordNotFound
 	}
 	return nil
+}
+
+func (p PrivilegeModel) CheckAccess(userId int, tableName, stage string) (*Privilege, error) {
+	query := `
+	SELECT p.user_id, t.table_name as table_name, t.stage, t.can_read, t.can_write
+	FROM privileges t
+	JOIN tables t ON p.table_id = t.id
+	WHERE p.user_id = $1 AND t.table_name = $2 AND (t.stage = $3 OR t.stage = 'all')
+	LIMIT 1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var privilege Privilege
+	err := p.DB.QueryRowContext(ctx, query, userId, tableName, stage).Scan(
+		&privilege.UserId,
+		&privilege.TableName,
+		&privilege.Stage,
+		&privilege.CanRead,
+		&privilege.CanWrite,
+	)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &privilege, nil
 }

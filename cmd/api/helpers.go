@@ -48,6 +48,32 @@ func (app *application) readYearParam(r *http.Request) (string, error) {
 	return year, nil
 }
 
+func (app *application) readStageParam(r *http.Request) (string, error) {
+	param2 := r.PathValue("stage")
+	switch strings.TrimSpace(param2) {
+	case "1":
+		param2 = "الاولى"
+	case "2":
+		param2 = "الثانية"
+	case "3":
+		param2 = "الثالثة"
+	case "4":
+		param2 = "الرابعة"
+	case "5":
+		param2 = "الخامسة"
+	case "6":
+		param2 = "السادسة"
+	case "all":
+		param2 = "all"
+	default:
+		param2 = ""
+	}
+	if strings.TrimSpace(param2) == "" {
+		return "", errors.New("empty stage parameter")
+	}
+	return param2, nil
+}
+
 func (app *application) readParams(r *http.Request) (string, string, error) {
 	param1 := r.PathValue("year")
 	if strings.TrimSpace(param1) == "" {
@@ -183,3 +209,28 @@ func (app *application) getUserFromContext(r *http.Request) (*data.User, error) 
 	}
 	return user, nil
 }
+
+func (app *application) getYearFromContext(r *http.Request) (string, error) {
+	year, ok := r.Context().Value(yearContextKey).(string)
+	if !ok {
+		return "", errors.New("can't get year from context")
+	}
+	return year, nil
+}
+
+func (app *application) getStageFromContext(r *http.Request) (string, error) {
+	stage, ok := r.Context().Value(stageContextKey).(string)
+	if !ok {
+		return "", errors.New("can't get stage from context")
+	}
+	return stage, nil
+}
+
+// get stages from context, an array of strings
+//func (app *application) getStagesFromContext(r *http.Request) ([]string, error) {
+//	stages, ok := r.Context().Value(stagesContextKey).([]string)
+//	if !ok {
+//		return nil, errors.New("can't get stages from context")
+//	}
+//	return stages, nil
+//}

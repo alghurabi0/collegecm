@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
-	year, stage, err := app.readParams(r)
+	year, err := app.getYearFromContext(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	stage, err := app.getStageFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
