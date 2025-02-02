@@ -64,7 +64,7 @@ func (app *application) subjectsAccess(next http.Handler) http.Handler {
 			app.notFoundResponse(w, r)
 			return
 		}
-		tableName := "subjects" + year
+		tableName := "subjects_" + year
 		user, err := app.getUserFromContext(r)
 		privilege, err := app.models.Privileges.CheckAccess(int(user.ID), tableName, stage)
 		if err != nil {
