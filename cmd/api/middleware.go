@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"net/http"
+
+	"collegecm.hamid.net/internal/data"
 )
 
 type contextKey string
@@ -68,6 +70,10 @@ func (app *application) subjectsAccess(next http.Handler) http.Handler {
 		user, err := app.getUserFromContext(r)
 		privilege, err := app.models.Privileges.CheckAccess(int(user.ID), tableName, stage)
 		if err != nil {
+			if err == data.ErrRecordNotFound {
+				app.unauthorized(w, r)
+				return
+			}
 			app.serverErrorResponse(w, r, err)
 			return
 		}
