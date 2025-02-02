@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
@@ -44,11 +43,12 @@ func (app *application) getPrivileges(w http.ResponseWriter, r *http.Request) {
 func (app *application) createPrivilege(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		UserId    int     `json:"user_id"`
-		TableId   int     `json:"table_id"`
+		Year      string  `json:"year"`
+		TableName *string `json:"table_name"`
 		Stage     *string `json:"stage"`
 		SubjectId *int    `json:"subject_id"`
-		CanRead   bool    `json:"can_read"`
-		CanWrite  bool    `json:"can_write"`
+		CanRead   *bool   `json:"can_read"`
+		CanWrite  *bool   `json:"can_write"`
 	}
 	err := app.readJSON(w, r, &input)
 	if err != nil {
@@ -56,21 +56,46 @@ func (app *application) createPrivilege(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	privilege := &data.Privilege{
-		UserId:    input.UserId,
-		TableId:   input.TableId,
-		Stage:     sql.NullString{String: "", Valid: false},
-		SubjectId: sql.NullInt64{Int64: 0, Valid: false},
-		CanRead:   input.CanRead,
-		CanWrite:  input.CanWrite,
-	}
-	if input.Stage != nil {
-		privilege.Stage = sql.NullString{String: *input.Stage, Valid: true}
-	}
-	if input.SubjectId != nil {
-		privilege.SubjectId = sql.NullInt64{Int64: int64(*input.SubjectId), Valid: true}
+		UserId: input.UserId,
+		Year:   input.Year,
 	}
 	v := validator.New()
 	if data.ValidatePrivilege(v, privilege); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+	if input.Stage != nil {
+		privilege.Stage = *input.Stage
+	} else {
+		privilege.Stage = "none"
+	}
+	if input.SubjectId != nil {
+		privilege.SubjectId = *input.SubjectId
+	} else {
+		privilege.SubjectId = 0
+	}
+	if input.CanRead != nil {
+		privilege.CanRead = *input.CanRead
+	} else {
+		privilege.CanRead = false
+	}
+	if input.CanWrite != nil {
+		privilege.CanWrite = *input.CanWrite
+	} else {
+		privilege.CanWrite = false
+	}
+	if input.TableName != nil {
+		table, err := app.models.Tables.GetByName(*input.TableName, privilege.Year)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		privilege.TableId = int(table.ID)
+	} else {
+		privilege.TableId = 0
+	}
+	v = validator.New()
+	if data.ValidatePrivilegeFull(v, privilege); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}

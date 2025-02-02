@@ -9,20 +9,27 @@ import (
 )
 
 type Privilege struct {
-	UserId    int            `json:"user_id"`
-	Year      string         `json:"year"`
-	TableId   int            `json:"table_id"`
-	Stage     sql.NullString `json:"stage"`
-	SubjectId sql.NullInt64  `json:"subject_id"`
-	CanRead   bool           `json:"can_read"`
-	CanWrite  bool           `json:"can_write"`
-	CreatedAt time.Time      `json:"created_at"`
+	UserId    int       `json:"user_id"`
+	Year      string    `json:"year"`
+	TableId   int       `json:"table_id"`
+	Stage     string    `json:"stage"`
+	SubjectId int       `json:"subject_id"`
+	CanRead   bool      `json:"can_read"`
+	CanWrite  bool      `json:"can_write"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 func ValidatePrivilege(v *validator.Validator, privilege *Privilege) {
-	// TODO - handle strings length with varchar
-	v.Check(privilege.UserId != 0, "المستخدم", "يجب تزويد المعلومات")
-	v.Check(privilege.TableId != 0, "الجدول", "يجب تزويد المعلومات")
+	v.Check(privilege.UserId > 0, "المستخدم", "يجب تزويد المعلومات")
+	v.Check(privilege.Year != "", "الجدول", "يجب تزويد المعلومات")
+}
+
+func ValidatePrivilegeFull(v *validator.Validator, privilege *Privilege) {
+	v.Check(privilege.TableId >= -1, "الجدول", "يجب تزويد المعلومات")
+	v.Check(privilege.Stage != "", "المرحلة", "يجب تزويد المعلومات")
+	v.Check(privilege.SubjectId >= -1, "المادة", "يجب تزويد المعلومات")
+	v.Check(privilege.CanRead || !privilege.CanRead, "الصلاحيات", "يجب تزويد المعلومات")
+	v.Check(privilege.CanWrite || !privilege.CanWrite, "الصلاحيات", "يجب تزويد المعلومات")
 }
 
 type PrivilegeModel struct {
@@ -31,13 +38,15 @@ type PrivilegeModel struct {
 
 func (p PrivilegeModel) Insert(privilege *Privilege) error {
 	query := `
-        INSERT INTO privileges (user_id, table_id, stage, subject_id, can_read, can_write) 
-        VALUES ($1, $2, $3, $4, $5, $6)
-		ON CONFLICT (user_id, table_id, stage, subject_id) DO UPDATE
-        SET can_read = $5, can_write = $6
-		RETURNING created_at`
+    INSERT INTO privileges (user_id, year, table_id, stage, subject_id, can_read, can_write)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    ON CONFLICT (user_id, year, table_id, stage, subject_id) DO UPDATE
+    SET can_read = $6, can_write = $7
+	RETURNING created_at
+`
 	args := []interface{}{
 		privilege.UserId,
+		privilege.Year,
 		privilege.TableId,
 		privilege.Stage,
 		privilege.SubjectId,
