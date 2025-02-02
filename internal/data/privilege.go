@@ -112,10 +112,10 @@ func (p PrivilegeModel) Delete(userId int, tableId int, stage sql.NullString, su
 
 func (p PrivilegeModel) CheckAccess(userId int, tableName, stage string) (*Privilege, error) {
 	query := `
-	SELECT p.user_id, t.table_name as table_name, t.stage, t.can_read, t.can_write
+	SELECT p.user_id, t.table_name as table_name, p.stage, p.can_read, p.can_write
 	FROM privileges t
 	JOIN tables t ON p.table_id = t.id
-	WHERE p.user_id = $1 AND t.table_name = $2 AND (t.stage = $3 OR t.stage = 'all')
+	WHERE p.user_id = $1 AND t.table_name = $2 AND (p.stage = $3 OR p.stage = 'all')
 	LIMIT 1`
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
