@@ -73,13 +73,13 @@ func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
 		var privilege Privilege
 		err := rows.Scan(
 			&privilege.UserId,
-			&privilege.Year,
 			&privilege.TableId,
 			&privilege.Stage,
 			&privilege.SubjectId,
 			&privilege.CanRead,
 			&privilege.CanWrite,
 			&privilege.CreatedAt,
+			&privilege.Year,
 		)
 		if err != nil {
 			return nil, err
