@@ -100,9 +100,6 @@ func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
 }
 
 func (m StudentModel) Get(year string, id int64) (*Student, error) {
-	if id < 0 {
-		return nil, ErrRecordNotFound
-	}
 	// Define the SQL query for retrieving the movie data.
 	tableName := fmt.Sprintf("students_%s", year)
 	query := fmt.Sprintf(`

@@ -271,3 +271,26 @@ func (m ExemptedModel) Delete(year string, id int64) error {
 	}
 	return nil
 }
+
+func (m ExemptedModel) GetStage(id int64, year string) (string, error) {
+	studentsTable := fmt.Sprintf("students_%s", year)
+	exemptedTable := fmt.Sprintf("exempted_%s", year)
+	query := fmt.Sprintf(`
+	SELECT s.stage
+	FROM %s s
+	JOIN %s e ON s.student_id = e.student_id
+	WHERE e.id = $1;`, studentsTable, exemptedTable)
+	var stage string
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&stage)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return "", ErrRecordNotFound
+		default:
+			return "", err
+		}
+	}
+	return stage, nil
+}

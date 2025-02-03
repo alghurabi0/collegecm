@@ -99,17 +99,17 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	// id, err := app.readIdParam(r)
+	// if err != nil {
+	// 	app.notFoundResponse(w, r)
+	// 	return
+	// }
 	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	student, err := app.models.Students.Get(year, id)
+	student, err := app.getStudentFromContext(r)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -159,7 +159,7 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
+	id, err := app.getIdFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

@@ -142,17 +142,17 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	// id, err := app.readIdParam(r)
+	// if err != nil {
+	// 	app.notFoundResponse(w, r)
+	// 	return
+	// }
 	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	subject, err := app.models.Subjects.Get(year, id)
+	subject, err := app.getSubjectFromContext(r)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -241,7 +241,7 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteSubject(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
+	id, err := app.getIdFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

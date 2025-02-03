@@ -271,3 +271,26 @@ func (m CarryoverModel) Delete(year string, id int64) error {
 	}
 	return nil
 }
+
+func (m CarryoverModel) GetStage(id int64, year string) (string, error) {
+	studentsTable := fmt.Sprintf("students_%s", year)
+	carrysTable := fmt.Sprintf("carryovers_%s", year)
+	query := fmt.Sprintf(`
+	SELECT s.stage
+	FROM %s s
+	JOIN %s c ON s.student_id = c.student_id
+	WHERE c.id = $1;`, studentsTable, carrysTable)
+	var stage string
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&stage)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return "", ErrRecordNotFound
+		default:
+			return "", err
+		}
+	}
+	return stage, nil
+}

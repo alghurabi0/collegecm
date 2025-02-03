@@ -188,7 +188,7 @@ func (app *application) createCarryover(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) deleteCarryover(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
+	id, err := app.getIdFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

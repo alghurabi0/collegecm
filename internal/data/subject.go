@@ -159,12 +159,6 @@ func (m SubjectModel) Get(year string, id int64) (*Subject, error) {
 	// auto-incrementing at 1 by default, so we know that no movies will have ID values
 	// less than that. To avoid making an unnecessary database call, we take a shortcut
 	// and return an ErrRecordNotFound error straight away.
-	if id < 0 {
-		return nil, ErrRecordNotFound
-	}
-	if strings.TrimSpace(year) == "" {
-		return nil, errors.New("invalid year")
-	}
 	// Define the SQL query for retrieving the movie data.
 	tableName := fmt.Sprintf("subjects_%s", year)
 	query := fmt.Sprintf(`

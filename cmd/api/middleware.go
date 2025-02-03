@@ -17,6 +17,9 @@ const stageContextKey = contextKey("stage")
 const idContextKey = contextKey("id")
 const customPrivsContextKey = contextKey("custom_privs")
 const studentContextKey = contextKey("student")
+const subjectContextKey = contextKey("subject")
+
+//const markContextKey = contextKey("mark")
 
 //const stagesContextKey = contextKey("stages")
 
@@ -100,7 +103,7 @@ func (app *application) getAllAccess(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) writeAccess(next http.Handler) http.Handler {
+func (app *application) createAccess(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		parts := strings.Split(path, "/")
@@ -116,7 +119,7 @@ func (app *application) writeAccess(next http.Handler) http.Handler {
 			app.serverErrorResponse(w, r, err)
 			return
 		}
-		hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), tableName)
+		hasAccess, err := app.models.Privileges.CheckCreateAccess(int(user.ID), tableName)
 		if err != nil {
 			app.serverErrorResponse(w, r, err)
 			return
@@ -126,6 +129,90 @@ func (app *application) writeAccess(next http.Handler) http.Handler {
 			return
 		}
 		ctx := context.WithValue(r.Context(), yearContextKey, year)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) writeAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		year, err := app.readYearParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		id, err := app.readIdParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		ctx := context.WithValue(r.Context(), yearContextKey, year)
+		ctx = context.WithValue(ctx, idContextKey, id)
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		cat := parts[2]
+		tableName := cat + "_" + year
+
+		var student *data.Student
+		var subject *data.Subject
+		var stage string
+		switch cat {
+		case "students":
+			student, err = app.models.Students.Get(year, id)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			stage = student.Stage
+			ctx = context.WithValue(ctx, studentContextKey, student)
+		case "subjects":
+			subject, err = app.models.Subjects.Get(year, id)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			stage = subject.Stage
+			ctx = context.WithValue(ctx, subjectContextKey, subject)
+		case "carryovers":
+			stage, err = app.models.Carryovers.GetStage(id, year)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			if stage == "" {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+		case "exempteds":
+			tableName = "exempted_" + year
+			stage, err = app.models.Exempteds.GetStage(id, year)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			if stage == "" {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+		default:
+			app.notFoundResponse(w, r)
+			return
+		}
+
+		hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), tableName, stage)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !hasAccess {
+			app.unauthorized(w, r)
+			return
+		}
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})

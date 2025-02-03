@@ -250,6 +250,14 @@ func (app *application) getStudentFromContext(r *http.Request) (*data.Student, e
 	return student, nil
 }
 
+func (app *application) getSubjectFromContext(r *http.Request) (*data.Subject, error) {
+	subject, ok := r.Context().Value(subjectContextKey).(*data.Subject)
+	if !ok {
+		return nil, errors.New("can't get subject from context")
+	}
+	return subject, nil
+}
+
 // get stages from context, an array of strings
 //func (app *application) getStagesFromContext(r *http.Request) ([]string, error) {
 //	stages, ok := r.Context().Value(stagesContextKey).([]string)

@@ -188,7 +188,7 @@ func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteExempted(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
+	id, err := app.getIdFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
