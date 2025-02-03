@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"collegecm.hamid.net/internal/data"
 )
@@ -13,6 +14,9 @@ const isLoggedInContextKey = contextKey("isLoggedIn")
 const userModelContextKey = contextKey("userStruct")
 const yearContextKey = contextKey("year")
 const stageContextKey = contextKey("stage")
+const idContextKey = contextKey("id")
+const customPrivsContextKey = contextKey("custom_privs")
+const studentContextKey = contextKey("student")
 
 //const stagesContextKey = contextKey("stages")
 
@@ -54,8 +58,11 @@ func (app *application) isLoggedIn(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) subjectsAccess(next http.Handler) http.Handler {
+func (app *application) getAllAccess(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		cat := parts[2]
 		year, err := app.readYearParam(r)
 		if err != nil {
 			app.notFoundResponse(w, r)
@@ -66,8 +73,12 @@ func (app *application) subjectsAccess(next http.Handler) http.Handler {
 			app.notFoundResponse(w, r)
 			return
 		}
-		tableName := "subjects_" + year
+		tableName := cat + "_" + year
 		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
 		privilege, err := app.models.Privileges.CheckAccess(int(user.ID), tableName, stage)
 		if err != nil {
 			if err == data.ErrRecordNotFound {
@@ -84,6 +95,75 @@ func (app *application) subjectsAccess(next http.Handler) http.Handler {
 		ctx := context.WithValue(r.Context(), yearContextKey, year)
 		ctx = context.WithValue(ctx, stageContextKey, stage)
 		//ctx = context.WithValue(ctx, stagesContextKey, stages)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) writeAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		cat := parts[2]
+		year, err := app.readYearParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		tableName := cat + "_" + year
+		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), tableName)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !hasAccess {
+			app.unauthorized(w, r)
+			return
+		}
+		ctx := context.WithValue(r.Context(), yearContextKey, year)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) customAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		year, err := app.readYearParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		id, err := app.readIdParam(r)
+		if err != nil {
+			app.notFoundResponse(w, r)
+			return
+		}
+		tableName := "students_" + year
+		student, err := app.models.Students.GetCustom(tableName, id)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		stage := student.Stage
+		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		privileges, err := app.models.Privileges.CheckCustomAccess(int(user.ID), year, stage)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		ctx := context.WithValue(r.Context(), yearContextKey, year)
+		ctx = context.WithValue(ctx, idContextKey, id)
+		ctx = context.WithValue(ctx, customPrivsContextKey, privileges)
+		ctx = context.WithValue(ctx, studentContextKey, student)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r)
 	})

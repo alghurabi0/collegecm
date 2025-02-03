@@ -40,33 +40,33 @@ func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
 // Add a showMovieHandler for the "GET /v1/movies/:id" endpoint. For now, we retrieve
 // the interpolated "id" parameter from the current URL and include it in a placeholder
 // response.
-func (app *application) getSubjectHandler(w http.ResponseWriter, r *http.Request) {
-	//id
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	subject, err := app.models.Subjects.Get(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"subject": subject}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getSubjectHandler(w http.ResponseWriter, r *http.Request) {
+// 	//id
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	subject, err := app.models.Subjects.Get(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"subject": subject}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
 func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Request) {
-	year, err := app.readYearParam(r)
+	year, err := app.getYearFromContext(r)
 	if err != nil {
-		app.badRequestResponse(w, r, err)
+		app.notFoundResponse(w, r)
 		return
 	}
 	// Declare an anonymous struct to hold the information that we expect to be in the
@@ -142,7 +142,12 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -236,7 +241,12 @@ func (app *application) updateSubject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteSubject(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

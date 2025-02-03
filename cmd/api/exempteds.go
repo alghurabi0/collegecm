@@ -3,15 +3,18 @@ package main
 import (
 	"errors"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"collegecm.hamid.net/internal/data"
 	"collegecm.hamid.net/internal/validator"
 )
 
 func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
-	year, stage, err := app.readParams(r)
+	year, err := app.getYearFromContext(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	stage, err := app.getStageFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -32,113 +35,113 @@ func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) getExempted(w http.ResponseWriter, r *http.Request) {
-	//id
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	exempted, err := app.models.Exempteds.Get(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"exempted": exempted}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getExempted(w http.ResponseWriter, r *http.Request) {
+// 	//id
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	exempted, err := app.models.Exempteds.Get(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"exempted": exempted}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
-func (app *application) findExempted(w http.ResponseWriter, r *http.Request) {
-	student_idStr := r.PathValue("student_id")
-	if strings.TrimSpace(student_idStr) == "" {
-		app.notFoundResponse(w, r)
-		return
-	}
-	student_id, err := strconv.ParseInt(student_idStr, 10, 64)
-	if err != nil || student_id < 1 {
-		app.notFoundResponse(w, r)
-		return
-	}
-	subject_idStr := r.PathValue("subject_id")
-	if strings.TrimSpace(subject_idStr) == "" {
-		app.notFoundResponse(w, r)
-		return
-	}
-	subject_id, err := strconv.ParseInt(subject_idStr, 10, 64)
-	if err != nil || subject_id < 1 {
-		app.notFoundResponse(w, r)
-		return
-	}
+// func (app *application) findExempted(w http.ResponseWriter, r *http.Request) {
+// 	student_idStr := r.PathValue("student_id")
+// 	if strings.TrimSpace(student_idStr) == "" {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	student_id, err := strconv.ParseInt(student_idStr, 10, 64)
+// 	if err != nil || student_id < 1 {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	subject_idStr := r.PathValue("subject_id")
+// 	if strings.TrimSpace(subject_idStr) == "" {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	subject_id, err := strconv.ParseInt(subject_idStr, 10, 64)
+// 	if err != nil || subject_id < 1 {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
 
-	exempted, err := app.models.Exempteds.Find(student_id, subject_id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"exempted": exempted}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// 	exempted, err := app.models.Exempteds.Find(student_id, subject_id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"exempted": exempted}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
-func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	exempteds, err := app.models.Exempteds.GetSubjects(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"subjects_exempteds": exempteds}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getSubjectsExempteds(w http.ResponseWriter, r *http.Request) {
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	exempteds, err := app.models.Exempteds.GetSubjects(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"subjects_exempteds": exempteds}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
-func (app *application) getStudentsExempteds(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	exempteds, err := app.models.Exempteds.GetStudents(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"students_exempteds": exempteds}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getStudentsExempteds(w http.ResponseWriter, r *http.Request) {
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	exempteds, err := app.models.Exempteds.GetStudents(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"students_exempteds": exempteds}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
 func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
-	year, err := app.readYearParam(r)
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -185,7 +188,12 @@ func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteExempted(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

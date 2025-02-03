@@ -181,3 +181,27 @@ func (m StudentModel) Delete(year string, id int64) error {
 	}
 	return nil
 }
+
+func (m StudentModel) GetCustom(tableName string, id int64) (*Student, error) {
+	query := fmt.Sprintf(`
+	SELECT student_id, student_name, stage
+	FROM %s
+	WHERE student_id = $1`, tableName)
+	var student Student
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&student.StudentId,
+		&student.StudentName,
+		&student.Stage,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &student, nil
+}

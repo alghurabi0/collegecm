@@ -20,6 +20,14 @@ type Privilege struct {
 	TableName string    `json:"-"`
 }
 
+type CustomPrivilegeAccess struct {
+	Students   bool
+	Subjects   bool
+	Carryovers bool
+	Exempted   bool
+	Marks      bool
+}
+
 func ValidatePrivilege(v *validator.Validator, privilege *Privilege) {
 	v.Check(privilege.UserId > 0, "المستخدم", "يجب تزويد المعلومات")
 	v.Check(privilege.Year != "", "الجدول", "يجب تزويد المعلومات")
@@ -136,4 +144,97 @@ func (p PrivilegeModel) CheckAccess(userId int, tableName, stage string) (*Privi
 		}
 	}
 	return &privilege, nil
+}
+
+func (p PrivilegeModel) CheckWriteAccess(userId int, tableName string) (bool, error) {
+	query := `
+	SELECT p.user_id, t.table_name as table_name, p.can_read, p.can_write
+	FROM privileges p
+	JOIN tables t ON p.table_id = t.id
+	WHERE p.user_id = $1 AND t.table_name = $2
+	LIMIT 1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var privilege Privilege
+	err := p.DB.QueryRowContext(ctx, query, userId, tableName).Scan(
+		&privilege.UserId,
+		&privilege.TableName,
+		&privilege.CanRead,
+		&privilege.CanWrite,
+	)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	if privilege.CanWrite {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (p PrivilegeModel) CheckCustomAccess(userId int, year, stage string) (*CustomPrivilegeAccess, error) {
+	query := `
+	SELECT p.can_read
+	FROM privileges p
+	JOIN tables t ON p.table_id = t.id
+	WHERE p.user_id = $1 AND t.table_name = $2 AND (p.stage = $3 OR p.stage = 'all')
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var access CustomPrivilegeAccess
+	table := "students_" + year
+	err := p.DB.QueryRowContext(ctx, query, userId, table, stage).Scan(&access.Students)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			access.Students = false
+		default:
+			return nil, err
+		}
+	}
+	table = "subjects_" + year
+	err = p.DB.QueryRowContext(ctx, query, userId, table, stage).Scan(&access.Subjects)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			access.Subjects = false
+		default:
+			return nil, err
+		}
+	}
+	table = "carryovers_" + year
+	err = p.DB.QueryRowContext(ctx, query, userId, table, stage).Scan(&access.Carryovers)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			access.Carryovers = false
+		default:
+			return nil, err
+		}
+	}
+	table = "exempted_" + year
+	err = p.DB.QueryRowContext(ctx, query, userId, table, stage).Scan(&access.Exempted)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			access.Exempted = false
+		default:
+			return nil, err
+		}
+	}
+	table = "marks_" + year
+	err = p.DB.QueryRowContext(ctx, query, userId, table, stage).Scan(&access.Marks)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			access.Marks = false
+		default:
+			return nil, err
+		}
+	}
+	return &access, nil
 }

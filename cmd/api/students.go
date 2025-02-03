@@ -11,7 +11,12 @@ import (
 )
 
 func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
-	year, stage, err := app.readParams(r)
+	year, err := app.getYearFromContext(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	stage, err := app.getStageFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -32,30 +37,30 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) getStudent(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	student, err := app.models.Students.Get(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getStudent(w http.ResponseWriter, r *http.Request) {
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	student, err := app.models.Students.Get(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"student": student}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
 func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
-	year, err := app.readYearParam(r)
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -94,7 +99,12 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -149,7 +159,12 @@ func (app *application) updateStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

@@ -18,18 +18,18 @@ type envelope map[string]interface{}
 
 // Retrieve the "id" URL parameter from the current request context, then convert it to
 // an integer and return it. If the operation isn't successful, return 0 and an error.
-func (app *application) readIdYearParam(r *http.Request) (string, int64, error) {
-	year := r.PathValue("year")
-	if strings.TrimSpace(year) == "" {
-		return "", -1, errors.New("empty year parameter")
-	}
-	params := r.PathValue("id")
-	id, err := strconv.ParseInt(params, 10, 64)
-	if err != nil || id < 0 {
-		return "", -1, errors.New("invalid id parameter")
-	}
-	return year, id, nil
-}
+// func (app *application) readIdYearParam(r *http.Request) (string, int64, error) {
+// 	year := r.PathValue("year")
+// 	if strings.TrimSpace(year) == "" {
+// 		return "", -1, errors.New("empty year parameter")
+// 	}
+// 	params := r.PathValue("id")
+// 	id, err := strconv.ParseInt(params, 10, 64)
+// 	if err != nil || id < 0 {
+// 		return "", -1, errors.New("invalid id parameter")
+// 	}
+// 	return year, id, nil
+// }
 
 func (app *application) readIdParam(r *http.Request) (int64, error) {
 	params := r.PathValue("id")
@@ -74,35 +74,35 @@ func (app *application) readStageParam(r *http.Request) (string, error) {
 	return param2, nil
 }
 
-func (app *application) readParams(r *http.Request) (string, string, error) {
-	param1 := r.PathValue("year")
-	if strings.TrimSpace(param1) == "" {
-		return "", "", errors.New("empty year parameter")
-	}
-	param2 := r.PathValue("stage")
-	switch strings.TrimSpace(param2) {
-	case "1":
-		param2 = "الاولى"
-	case "2":
-		param2 = "الثانية"
-	case "3":
-		param2 = "الثالثة"
-	case "4":
-		param2 = "الرابعة"
-	case "5":
-		param2 = "الخامسة"
-	case "6":
-		param2 = "السادسة"
-	case "all":
-		param2 = "all"
-	default:
-		param2 = ""
-	}
-	if strings.TrimSpace(param2) == "" {
-		return "", "", errors.New("empty stage parameter")
-	}
-	return param1, param2, nil
-}
+// func (app *application) readParams(r *http.Request) (string, string, error) {
+// 	param1 := r.PathValue("year")
+// 	if strings.TrimSpace(param1) == "" {
+// 		return "", "", errors.New("empty year parameter")
+// 	}
+// 	param2 := r.PathValue("stage")
+// 	switch strings.TrimSpace(param2) {
+// 	case "1":
+// 		param2 = "الاولى"
+// 	case "2":
+// 		param2 = "الثانية"
+// 	case "3":
+// 		param2 = "الثالثة"
+// 	case "4":
+// 		param2 = "الرابعة"
+// 	case "5":
+// 		param2 = "الخامسة"
+// 	case "6":
+// 		param2 = "السادسة"
+// 	case "all":
+// 		param2 = "all"
+// 	default:
+// 		param2 = ""
+// 	}
+// 	if strings.TrimSpace(param2) == "" {
+// 		return "", "", errors.New("empty stage parameter")
+// 	}
+// 	return param1, param2, nil
+// }
 
 // Define a writeJSON() helper for sending responses. This takes the destination
 // http.ResponseWriter, the HTTP status code to send, the data to encode to JSON, and a
@@ -194,13 +194,13 @@ func (app *application) processFile(file *multipart.File, data interface{}) erro
 	return nil
 }
 
-func (app *application) isLoggedInCheck(r *http.Request) bool {
-	isLoggedIn, ok := r.Context().Value(isLoggedInContextKey).(bool)
-	if !ok {
-		return false
-	}
-	return isLoggedIn
-}
+// func (app *application) isLoggedInCheck(r *http.Request) bool {
+// 	isLoggedIn, ok := r.Context().Value(isLoggedInContextKey).(bool)
+// 	if !ok {
+// 		return false
+// 	}
+// 	return isLoggedIn
+// }
 
 func (app *application) getUserFromContext(r *http.Request) (*data.User, error) {
 	user, ok := r.Context().Value(userModelContextKey).(*data.User)
@@ -224,6 +224,30 @@ func (app *application) getStageFromContext(r *http.Request) (string, error) {
 		return "", errors.New("can't get stage from context")
 	}
 	return stage, nil
+}
+
+func (app *application) getIdFromContext(r *http.Request) (int64, error) {
+	id, ok := r.Context().Value(idContextKey).(int64)
+	if !ok {
+		return -1, errors.New("can't get id from context")
+	}
+	return id, nil
+}
+
+func (app *application) getCustomPrivsFromContext(r *http.Request) (*data.CustomPrivilegeAccess, error) {
+	customPrivilegeAccess, ok := r.Context().Value(customPrivsContextKey).(*data.CustomPrivilegeAccess)
+	if !ok {
+		return nil, errors.New("can't get custom privilege access from context")
+	}
+	return customPrivilegeAccess, nil
+}
+
+func (app *application) getStudentFromContext(r *http.Request) (*data.Student, error) {
+	student, ok := r.Context().Value(studentContextKey).(*data.Student)
+	if !ok {
+		return nil, errors.New("can't get student from context")
+	}
+	return student, nil
 }
 
 // get stages from context, an array of strings

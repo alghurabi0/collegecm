@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"collegecm.hamid.net/internal/data"
@@ -10,7 +9,12 @@ import (
 )
 
 func (app *application) getMarks(w http.ResponseWriter, r *http.Request) {
-	year, stage, err := app.readParams(r)
+	year, err := app.getYearFromContext(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	stage, err := app.getStageFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -31,31 +35,31 @@ func (app *application) getMarks(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (app *application) getMark(w http.ResponseWriter, r *http.Request) {
-	//id
-	year, id, err := app.readIdYearParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
-	mark, err := app.models.Marks.Get(year, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"mark": mark}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
+// func (app *application) getMark(w http.ResponseWriter, r *http.Request) {
+// 	//id
+// 	year, id, err := app.readIdYearParam(r)
+// 	if err != nil {
+// 		app.notFoundResponse(w, r)
+// 		return
+// 	}
+// 	mark, err := app.models.Marks.Get(year, id)
+// 	if err != nil {
+// 		switch {
+// 		case errors.Is(err, data.ErrRecordNotFound):
+// 			app.notFoundResponse(w, r)
+// 		default:
+// 			app.serverErrorResponse(w, r, err)
+// 		}
+// 		return
+// 	}
+// 	err = app.writeJSON(w, http.StatusOK, envelope{"mark": mark}, nil)
+// 	if err != nil {
+// 		app.serverErrorResponse(w, r, err)
+// 	}
+// }
 
 func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
-	year, err := app.readYearParam(r)
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -116,10 +120,14 @@ func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
-		fmt.Println(err)
+		return
+	}
+	year, err := app.getYearFromContext(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
 		return
 	}
 	mark, err := app.models.Marks.GetRaw(year, id)
@@ -174,7 +182,12 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteMark(w http.ResponseWriter, r *http.Request) {
-	year, id, err := app.readIdYearParam(r)
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return

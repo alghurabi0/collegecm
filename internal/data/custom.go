@@ -19,7 +19,7 @@ type CustomModel struct {
 	DB *sql.DB
 }
 
-func (c CustomModel) GetStudentData(year string, id int64) (*Custom, error) {
+func (c CustomModel) GetStudentData(year string, id int64, privs *CustomPrivilegeAccess) (*Custom, error) {
 	carryoverTablename := fmt.Sprintf("carryovers_%s", year)
 	exemptedTablename := fmt.Sprintf("exempted_%s", year)
 	marksTablename := fmt.Sprintf("marks_%s", year)
@@ -50,38 +50,51 @@ func (c CustomModel) GetStudentData(year string, id int64) (*Custom, error) {
 		FROM %s
 		WHERE student_id = $1
 	);`, subjectsTablename, studentsTablename)
-	studentInfoQ := fmt.Sprintf(`
-	SELECT student_id, student_name, stage
-	FROM %s
-	WHERE student_id = $1;`, studentsTablename)
+	// studentInfoQ := fmt.Sprintf(`
+	// SELECT student_id, student_name, stage
+	// FROM %s
+	// WHERE student_id = $1;`, studentsTablename)
 	// Create a context with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
+	var carryovers []*Carryover
+	var exempteds []*Exempted
+	var marks []*Mark
+	var subjectsByStage []*Subject
+	var err error
 	// Fetch carryovers
-	carryovers, err := fetchCarryovers(ctx, c.DB, carryoverQ, id)
-	if err != nil {
-		return nil, err
+	if privs.Carryovers {
+		carryovers, err = fetchCarryovers(ctx, c.DB, carryoverQ, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Fetch exempteds
-	exempteds, err := fetchExempteds(ctx, c.DB, exemptedQ, id)
-	if err != nil {
-		return nil, err
+	if privs.Exempted {
+		exempteds, err = fetchExempteds(ctx, c.DB, exemptedQ, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Fetch marks
-	marks, err := fetchMarks(ctx, c.DB, marksQ, id)
-	if err != nil {
-		return nil, err
+	if privs.Marks {
+		marks, err = fetchMarks(ctx, c.DB, marksQ, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Fetch subjects by stage
-	subjectsByStage, err := fetchSubjectsByStage(ctx, c.DB, subjectsByStageQ, id)
-	if err != nil {
-		return nil, err
+	if privs.Subjects {
+		subjectsByStage, err = fetchSubjectsByStage(ctx, c.DB, subjectsByStageQ, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 	// Fetch student information
-	studentInfo, err := fetchStudentInfo(ctx, c.DB, studentInfoQ, id)
-	if err != nil {
-		return nil, err
-	}
+	// studentInfo, err := fetchStudentInfo(ctx, c.DB, studentInfoQ, id)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	// Combine into a custom struct
 	custom := &Custom{
@@ -89,7 +102,7 @@ func (c CustomModel) GetStudentData(year string, id int64) (*Custom, error) {
 		Exempteds:  exempteds,
 		Marks:      marks,
 		Subjects:   subjectsByStage,
-		Student:    studentInfo,
+		//Student:    studentInfo,
 	}
 
 	return custom, nil
@@ -116,17 +129,17 @@ func fetchSubjectsByStage(ctx context.Context, db *sql.DB, query string, id int6
 }
 
 // Helper function to fetch student info
-func fetchStudentInfo(ctx context.Context, db *sql.DB, query string, id int64) (*Student, error) {
-	row := db.QueryRowContext(ctx, query, id)
+// func fetchStudentInfo(ctx context.Context, db *sql.DB, query string, id int64) (*Student, error) {
+// 	row := db.QueryRowContext(ctx, query, id)
 
-	var student Student
-	err := row.Scan(&student.StudentId, &student.StudentName, &student.Stage)
-	if err != nil {
-		return nil, err
-	}
+// 	var student Student
+// 	err := row.Scan(&student.StudentId, &student.StudentName, &student.Stage)
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	return &student, nil
-}
+// 	return &student, nil
+// }
 
 // Helper function to fetch carryovers
 func fetchCarryovers(ctx context.Context, db *sql.DB, query string, id int64) ([]*Carryover, error) {
