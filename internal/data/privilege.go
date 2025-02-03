@@ -17,7 +17,7 @@ type Privilege struct {
 	CanRead   bool      `json:"can_read"`
 	CanWrite  bool      `json:"can_write"`
 	CreatedAt time.Time `json:"created_at"`
-	TableName string    `json:"-"`
+	TableName string    `json:"table_name"`
 }
 
 type CustomPrivilegeAccess struct {
@@ -69,7 +69,12 @@ func (p PrivilegeModel) Insert(privilege *Privilege) error {
 }
 
 func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
-	query := `SELECT * FROM privileges WHERE user_id = $1`
+	query := `
+	SELECT p.user_id, p.year, t.table_name as table_name, p.stage, p.subject_id,
+	p.can_read, p.can_write, p.created_at
+	FROM privileges p
+	JOIN tables t ON p.table_id = t.id
+	WHERE user_id = $1`
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	rows, err := p.DB.QueryContext(ctx, query, userId)
@@ -83,13 +88,13 @@ func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
 		var privilege Privilege
 		err := rows.Scan(
 			&privilege.UserId,
-			&privilege.TableId,
+			&privilege.Year,
+			&privilege.TableName,
 			&privilege.Stage,
 			&privilege.SubjectId,
 			&privilege.CanRead,
 			&privilege.CanWrite,
 			&privilege.CreatedAt,
-			&privilege.Year,
 		)
 		if err != nil {
 			return nil, err
