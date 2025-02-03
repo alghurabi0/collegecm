@@ -258,6 +258,14 @@ func (app *application) getSubjectFromContext(r *http.Request) (*data.Subject, e
 	return subject, nil
 }
 
+func (app *application) getMarkFromContext(r *http.Request) (*data.Mark, error) {
+	mark, ok := r.Context().Value(markContextKey).(*data.Mark)
+	if !ok {
+		return nil, errors.New("can't get mark from context")
+	}
+	return mark, nil
+}
+
 // get stages from context, an array of strings
 //func (app *application) getStagesFromContext(r *http.Request) ([]string, error) {
 //	stages, ok := r.Context().Value(stagesContextKey).([]string)

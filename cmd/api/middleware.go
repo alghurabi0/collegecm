@@ -18,8 +18,7 @@ const idContextKey = contextKey("id")
 const customPrivsContextKey = contextKey("custom_privs")
 const studentContextKey = contextKey("student")
 const subjectContextKey = contextKey("subject")
-
-//const markContextKey = contextKey("mark")
+const markContextKey = contextKey("mark")
 
 //const stagesContextKey = contextKey("stages")
 
@@ -160,6 +159,7 @@ func (app *application) writeAccess(next http.Handler) http.Handler {
 
 		var student *data.Student
 		var subject *data.Subject
+		var mark *data.Mark
 		var stage string
 		switch cat {
 		case "students":
@@ -191,6 +191,22 @@ func (app *application) writeAccess(next http.Handler) http.Handler {
 		case "exempteds":
 			tableName = "exempted_" + year
 			stage, err = app.models.Exempteds.GetStage(id, year)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			if stage == "" {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+		case "marks":
+			mark, err = app.models.Marks.GetRaw(year, id)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
+			ctx = context.WithValue(ctx, markContextKey, mark)
+			stage, err = app.models.Marks.GetStage(mark.StudentId, year)
 			if err != nil {
 				app.serverErrorResponse(w, r, err)
 				return

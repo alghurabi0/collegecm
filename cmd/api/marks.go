@@ -120,17 +120,12 @@ func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
 	year, err := app.getYearFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
 	}
-	mark, err := app.models.Marks.GetRaw(year, id)
+	mark, err := app.getMarkFromContext(r)
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):
@@ -170,7 +165,7 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	newMark, err := app.models.Marks.Get(year, id)
+	newMark, err := app.models.Marks.Get(year, mark.Id)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
@@ -182,7 +177,7 @@ func (app *application) updateMark(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteMark(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIdParam(r)
+	id, err := app.getIdFromContext(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
