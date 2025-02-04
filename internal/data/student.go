@@ -202,3 +202,24 @@ func (m StudentModel) GetCustom(tableName string, id int64) (*Student, error) {
 	}
 	return &student, nil
 }
+
+func (m StudentModel) GetStage(id int64, year string) (string, error) {
+	studentsTable := fmt.Sprintf("students_%s", year)
+	query := fmt.Sprintf(`
+	SELECT stage
+	FROM %s
+	WHERE student_id = $1`, studentsTable)
+	var stage string
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&stage)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return "", ErrRecordNotFound
+		default:
+			return "", err
+		}
+	}
+	return stage, nil
+}

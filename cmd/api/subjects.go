@@ -64,7 +64,7 @@ func (app *application) getSubjects(w http.ResponseWriter, r *http.Request) {
 // }
 
 func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Request) {
-	year, err := app.getYearFromContext(r)
+	year, err := app.readYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -100,6 +100,22 @@ func (app *application) createSubjectHandler(w http.ResponseWriter, r *http.Requ
 		fmt.Println(err)
 		return
 	}
+	// privilege check
+	user, err := app.getUserFromContext(r)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), "subjects_"+year, input.Stage)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	if !hasAccess {
+		app.unauthorized(w, r)
+		return
+	}
+
 	subject := &data.Subject{
 		ID:                 input.ID,
 		SubjectName:        input.SubjectName,

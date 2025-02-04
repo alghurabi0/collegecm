@@ -75,6 +75,27 @@ func (app *application) createMark(w http.ResponseWriter, r *http.Request) {
 		app.badRequestResponse(w, r, err)
 		return
 	}
+	// privilege check
+	stage, err := app.models.Students.GetStage(input.StudentId, year)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	user, err := app.getUserFromContext(r)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), "marks_"+year, stage)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	if !hasAccess {
+		app.unauthorized(w, r)
+		return
+	}
+
 	mark := &data.Mark{
 		StudentId: input.StudentId,
 		SubjectId: input.SubjectId,
