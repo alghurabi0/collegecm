@@ -141,7 +141,7 @@ func (app *application) getExempteds(w http.ResponseWriter, r *http.Request) {
 // }
 
 func (app *application) createExempted(w http.ResponseWriter, r *http.Request) {
-	year, err := app.getYearFromContext(r)
+	year, err := app.readYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
