@@ -271,3 +271,49 @@ func (app *application) customAccess(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *application) userReadAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		table := parts[2]
+		hasAccess, err := app.models.Privileges.CheckUserReadAccess(int(user.ID), table)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !hasAccess {
+			app.unauthorized(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) userWriteAccess(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, err := app.getUserFromContext(r)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		path := r.URL.Path
+		parts := strings.Split(path, "/")
+		table := parts[2]
+		hasAccess, err := app.models.Privileges.CheckUserWriteAccess(int(user.ID), table)
+		if err != nil {
+			app.serverErrorResponse(w, r, err)
+			return
+		}
+		if !hasAccess {
+			app.unauthorized(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

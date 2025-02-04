@@ -17,6 +17,8 @@ func (app *application) routes() http.Handler {
 	// create := alice.New(app.isLoggedIn, app.createAccess)
 	write := alice.New(app.isLoggedIn, app.writeAccess)
 	custom := alice.New(app.isLoggedIn, app.customAccess)
+	userRead := alice.New(app.isLoggedIn, app.userReadAccess)
+	userWrite := alice.New(app.isLoggedIn, app.userWriteAccess)
 	// Register the relevant methods, URL patterns and handler functions for our
 	// endpoints using the HandlerFunc() method. Note that http.MethodGet and
 	// http.MethodPost are constants which equate to the strings "GET" and "POST"
@@ -60,14 +62,15 @@ func (app *application) routes() http.Handler {
 	router.Handle("PATCH /v1/marks/{year}/{id}", write.ThenFunc(app.updateMark))
 	router.Handle("DELETE /v1/marks/{year}/{id}", write.ThenFunc(app.deleteMark))
 	// users
-	router.Handle("GET /v1/users", auth.ThenFunc(app.getUsers))
-	router.Handle("GET /v1/users/{id}", auth.ThenFunc(app.getUser))
-	router.Handle("POST /v1/users", auth.ThenFunc(app.createUser))
-	router.Handle("PATCH /v1/users/{id}", auth.ThenFunc(app.updateUser))
-	router.Handle("DELETE /v1/users/{id}", auth.ThenFunc(app.deleteUser))
+	router.Handle("GET /v1/users", userRead.ThenFunc(app.getUsers))
+	router.Handle("GET /v1/users/{id}", userRead.ThenFunc(app.getUser))
+	router.Handle("POST /v1/users", userWrite.ThenFunc(app.createUser))
+	router.Handle("PATCH /v1/users/{id}", userWrite.ThenFunc(app.updateUser))
+	router.Handle("DELETE /v1/users/{id}", userWrite.ThenFunc(app.deleteUser))
 	// privileges
-	router.Handle("GET /v1/privileges/{id}", auth.ThenFunc(app.getPrivileges))
-	router.Handle("POST /v1/privileges", auth.ThenFunc(app.createPrivilege))
+	router.Handle("GET /v1/privileges/{id}", userRead.ThenFunc(app.getPrivileges))
+	router.Handle("POST /v1/privileges", userWrite.ThenFunc(app.createPrivilege))
+	router.Handle("DELETE /v1/privileges", userWrite.ThenFunc(app.deletePrivilege))
 	// auth
 	router.HandleFunc("GET /v1/auth/status", app.authStatus)
 	router.HandleFunc("POST /v1/login", app.login)

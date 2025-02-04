@@ -70,7 +70,7 @@ func (p PrivilegeModel) Insert(privilege *Privilege) error {
 
 func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
 	query := `
-	SELECT p.user_id, p.year, t.table_name as table_name, p.stage, p.subject_id,
+	SELECT p.user_id, p.year, p.table_id, t.table_name as table_name, p.stage, p.subject_id,
 	p.can_read, p.can_write, p.created_at
 	FROM privileges p
 	JOIN tables t ON p.table_id = t.id
@@ -89,6 +89,7 @@ func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
 		err := rows.Scan(
 			&privilege.UserId,
 			&privilege.Year,
+			&privilege.TableId,
 			&privilege.TableName,
 			&privilege.Stage,
 			&privilege.SubjectId,
@@ -104,9 +105,9 @@ func (p PrivilegeModel) GetAll(userId int) ([]*Privilege, error) {
 	return privileges, nil
 }
 
-func (p PrivilegeModel) Delete(userId int, tableId int, stage sql.NullString, subjectId sql.NullInt64) error {
-	query := `DELETE FROM privileges WHERE user_id = $1 AND table_id = $2 AND stage = $3 AND subject_id = $4`
-	args := []interface{}{userId, tableId, stage, subjectId}
+func (p PrivilegeModel) Delete(privilege *Privilege) error {
+	query := `DELETE FROM privileges WHERE user_id = $1 AND year = $2 AND table_id = $3 AND stage = $4`
+	args := []interface{}{privilege.UserId, privilege.Year, privilege.TableId, privilege.Stage}
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	result, err := p.DB.ExecContext(ctx, query, args...)
@@ -269,4 +270,58 @@ func (p PrivilegeModel) CheckCustomAccess(userId int, year, stage string) (*Cust
 		}
 	}
 	return &access, nil
+}
+
+func (p PrivilegeModel) CheckUserReadAccess(userId int, table string) (bool, error) {
+	query := `
+	SELECT p.can_read
+	FROM privileges p
+	JOIN tables t ON p.table_id = t.id
+	WHERE p.user_id = $1 AND t.table_name = $2
+	LIMIT 1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var privilege Privilege
+	err := p.DB.QueryRowContext(ctx, query, userId, table).Scan(
+		&privilege.CanRead,
+	)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	if privilege.CanRead {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (p PrivilegeModel) CheckUserWriteAccess(userId int, table string) (bool, error) {
+	query := `
+	SELECT p.can_write
+	FROM privileges p
+	JOIN tables t ON p.table_id = t.id
+	WHERE p.user_id = $1 AND t.table_name = $2
+	LIMIT 1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var privilege Privilege
+	err := p.DB.QueryRowContext(ctx, query, userId, table).Scan(
+		&privilege.CanWrite,
+	)
+	if err != nil {
+		switch {
+		case err == sql.ErrNoRows:
+			return false, nil
+		default:
+			return false, err
+		}
+	}
+	if privilege.CanWrite {
+		return true, nil
+	}
+	return false, nil
 }

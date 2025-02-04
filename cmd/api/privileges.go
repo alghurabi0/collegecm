@@ -95,3 +95,29 @@ func (app *application) createPrivilege(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) deletePrivilege(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		UserId  int    `json:"user_id"`
+		Year    string `json:"year"`
+		TableId int    `json:"table_id"`
+		Stage   string `json:"stage"`
+	}
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	privilege := &data.Privilege{
+		UserId:  input.UserId,
+		Year:    input.Year,
+		TableId: input.TableId,
+		Stage:   input.Stage,
+	}
+	err = app.models.Privileges.Delete(privilege)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
