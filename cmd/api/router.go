@@ -14,7 +14,7 @@ func (app *application) routes() http.Handler {
 	standard := alice.New(app.sessionManager.LoadAndSave, app.secureHeaders)
 	auth := alice.New(app.isLoggedIn)
 	getAll := alice.New(app.isLoggedIn, app.getAllAccess)
-	create := alice.New(app.isLoggedIn, app.createAccess)
+	// create := alice.New(app.isLoggedIn, app.createAccess)
 	write := alice.New(app.isLoggedIn, app.writeAccess)
 	custom := alice.New(app.isLoggedIn, app.customAccess)
 	// Register the relevant methods, URL patterns and handler functions for our
@@ -26,14 +26,14 @@ func (app *application) routes() http.Handler {
 	// subjects
 	router.Handle("GET /v1/subjects/{year}/{stage}", getAll.ThenFunc(app.getSubjects))
 	//router.Handle("GET /v1/subject/{year}/{id}", auth.ThenFunc(app.getSubjectHandler))
-	router.Handle("POST /v1/subjects/{year}", create.ThenFunc(app.createSubjectHandler))
+	router.Handle("POST /v1/subjects/{year}", auth.ThenFunc(app.createSubjectHandler))
 	router.Handle("POST /v1/subjects/import", auth.ThenFunc(app.importSubjects))
 	router.Handle("PATCH /v1/subjects/{year}/{id}", write.ThenFunc(app.updateSubject))
 	router.Handle("DELETE /v1/subjects/{year}/{id}", write.ThenFunc(app.deleteSubject))
 	// students
 	router.Handle("GET /v1/students/{year}/{stage}", getAll.ThenFunc(app.getStudents))
 	//router.Handle("GET /v1/student/{year}/{id}", auth.ThenFunc(app.getStudent))
-	router.Handle("POST /v1/students/{year}", create.ThenFunc(app.createStudent))
+	router.Handle("POST /v1/students/{year}", auth.ThenFunc(app.createStudent))
 	router.Handle("POST /v1/students/import", auth.ThenFunc(app.importstudents))
 	router.Handle("PATCH /v1/students/{year}/{id}", write.ThenFunc(app.updateStudent))
 	router.Handle("DELETE /v1/students/{year}/{id}", write.ThenFunc(app.deleteStudent))
@@ -43,7 +43,7 @@ func (app *application) routes() http.Handler {
 	//router.Handle("GET /v1/carryovers/find/{year}/{student_id}/{subject_id}", auth.ThenFunc(app.findCarryover))
 	//router.Handle("GET /v1/carryovers/subjects/{year}/{id}", auth.ThenFunc(app.getSubjectsCarryovers))
 	//router.Handle("GET /v1/carryovers/students/{year}/{id}", auth.ThenFunc(app.getStudentsCarryovers))
-	router.Handle("POST /v1/carryovers/{year}", create.ThenFunc(app.createCarryover))
+	router.Handle("POST /v1/carryovers/{year}", auth.ThenFunc(app.createCarryover))
 	router.Handle("DELETE /v1/carryovers/{year}/{id}", write.ThenFunc(app.deleteCarryover))
 	// exempteds
 	router.Handle("GET /v1/exempted/{year}/{stage}", getAll.ThenFunc(app.getExempteds))
@@ -51,12 +51,12 @@ func (app *application) routes() http.Handler {
 	//router.Handle("GET /v1/exempteds/find/{student_id}/{subject_id}", auth.ThenFunc(app.findExempted))
 	//router.Handle("GET /v1/exempteds/subjects/{year}/{id}", auth.ThenFunc(app.getSubjectsExempteds))
 	//router.Handle("GET /v1/exempteds/students/{year}/{id}", auth.ThenFunc(app.getStudentsExempteds))
-	router.Handle("POST /v1/exempteds/{year}", create.ThenFunc(app.createExempted))
+	router.Handle("POST /v1/exempteds/{year}", auth.ThenFunc(app.createExempted))
 	router.Handle("DELETE /v1/exempteds/{year}/{id}", write.ThenFunc(app.deleteExempted))
 	// marks
 	router.Handle("GET /v1/marks/{year}/{stage}", getAll.ThenFunc(app.getMarks))
 	//router.Handle("GET /v1/mark/{year}/{id}", auth.ThenFunc(app.getMark))
-	router.Handle("POST /v1/marks/{year}", create.ThenFunc(app.createMark))
+	router.Handle("POST /v1/marks/{year}", auth.ThenFunc(app.createMark))
 	router.Handle("PATCH /v1/marks/{year}/{id}", write.ThenFunc(app.updateMark))
 	router.Handle("DELETE /v1/marks/{year}/{id}", write.ThenFunc(app.deleteMark))
 	// users

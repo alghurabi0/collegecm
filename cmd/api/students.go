@@ -60,7 +60,7 @@ func (app *application) getStudents(w http.ResponseWriter, r *http.Request) {
 // }
 
 func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
-	year, err := app.getYearFromContext(r)
+	year, err := app.readYearParam(r)
 	if err != nil {
 		app.notFoundResponse(w, r)
 		return
@@ -76,6 +76,22 @@ func (app *application) createStudent(w http.ResponseWriter, r *http.Request) {
 		app.badRequestResponse(w, r, err)
 		return
 	}
+	// privilege check
+	user, err := app.getUserFromContext(r)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	hasAccess, err := app.models.Privileges.CheckWriteAccess(int(user.ID), "students_"+year, input.Stage)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	if !hasAccess {
+		app.unauthorized(w, r)
+		return
+	}
+
 	student := &data.Student{
 		StudentName: input.StudentName,
 		Stage:       input.Stage,

@@ -151,35 +151,35 @@ func (p PrivilegeModel) CheckAccess(userId int, tableName, stage string) (*Privi
 	return &privilege, nil
 }
 
-func (p PrivilegeModel) CheckCreateAccess(userId int, tableName string) (bool, error) {
-	query := `
-	SELECT p.user_id, t.table_name as table_name, p.can_read, p.can_write
-	FROM privileges p
-	JOIN tables t ON p.table_id = t.id
-	WHERE p.user_id = $1 AND t.table_name = $2
-	LIMIT 1`
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	var privilege Privilege
-	err := p.DB.QueryRowContext(ctx, query, userId, tableName).Scan(
-		&privilege.UserId,
-		&privilege.TableName,
-		&privilege.CanRead,
-		&privilege.CanWrite,
-	)
-	if err != nil {
-		switch {
-		case err == sql.ErrNoRows:
-			return false, nil
-		default:
-			return false, err
-		}
-	}
-	if privilege.CanWrite {
-		return true, nil
-	}
-	return false, nil
-}
+// func (p PrivilegeModel) CheckCreateAccess(userId int, tableName string) (bool, error) {
+// 	query := `
+// 	SELECT p.user_id, t.table_name as table_name, p.can_read, p.can_write
+// 	FROM privileges p
+// 	JOIN tables t ON p.table_id = t.id
+// 	WHERE p.user_id = $1 AND t.table_name = $2
+// 	LIMIT 1`
+// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+// 	defer cancel()
+// 	var privilege Privilege
+// 	err := p.DB.QueryRowContext(ctx, query, userId, tableName).Scan(
+// 		&privilege.UserId,
+// 		&privilege.TableName,
+// 		&privilege.CanRead,
+// 		&privilege.CanWrite,
+// 	)
+// 	if err != nil {
+// 		switch {
+// 		case err == sql.ErrNoRows:
+// 			return false, nil
+// 		default:
+// 			return false, err
+// 		}
+// 	}
+// 	if privilege.CanWrite {
+// 		return true, nil
+// 	}
+// 	return false, nil
+// }
 
 func (p PrivilegeModel) CheckWriteAccess(userId int, tableName, stage string) (bool, error) {
 	query := `

@@ -102,36 +102,36 @@ func (app *application) getAllAccess(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) createAccess(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		parts := strings.Split(path, "/")
-		cat := parts[2]
-		year, err := app.readYearParam(r)
-		if err != nil {
-			app.notFoundResponse(w, r)
-			return
-		}
-		tableName := cat + "_" + year
-		user, err := app.getUserFromContext(r)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
-		}
-		hasAccess, err := app.models.Privileges.CheckCreateAccess(int(user.ID), tableName)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
-		}
-		if !hasAccess {
-			app.unauthorized(w, r)
-			return
-		}
-		ctx := context.WithValue(r.Context(), yearContextKey, year)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
-}
+// func (app *application) createAccess(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		path := r.URL.Path
+// 		parts := strings.Split(path, "/")
+// 		cat := parts[2]
+// 		year, err := app.readYearParam(r)
+// 		if err != nil {
+// 			app.notFoundResponse(w, r)
+// 			return
+// 		}
+// 		tableName := cat + "_" + year
+// 		user, err := app.getUserFromContext(r)
+// 		if err != nil {
+// 			app.serverErrorResponse(w, r, err)
+// 			return
+// 		}
+// 		hasAccess, err := app.models.Privileges.CheckCreateAccess(int(user.ID), tableName)
+// 		if err != nil {
+// 			app.serverErrorResponse(w, r, err)
+// 			return
+// 		}
+// 		if !hasAccess {
+// 			app.unauthorized(w, r)
+// 			return
+// 		}
+// 		ctx := context.WithValue(r.Context(), yearContextKey, year)
+// 		r = r.WithContext(ctx)
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
 
 func (app *application) writeAccess(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
