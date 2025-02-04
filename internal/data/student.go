@@ -62,7 +62,7 @@ func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
 		return nil, errors.New("invalid year")
 	}
 	tableName := fmt.Sprintf("students_%s", year)
-	query := fmt.Sprintf("SELECT * FROM %s", tableName)
+	query := fmt.Sprintf("SELECT seq_in_college, student_name, stage, student_id, state, created_at FROM %s", tableName)
 	var args []interface{}
 	if stage != "all" {
 		query += " WHERE stage = $1"
@@ -86,7 +86,6 @@ func (m StudentModel) GetAll(year, stage string) ([]*Student, error) {
 			&student.StudentId,
 			&student.State,
 			&student.CreatedAt,
-			&student.Year,
 		)
 		if err != nil {
 			return nil, err
