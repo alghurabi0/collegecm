@@ -246,7 +246,7 @@ func (y YearModel) Delete(year string) error {
 	if err != nil {
 		return err
 	}
-	_, err = y.DB.ExecContext(ctx, q, year)
+	_, err = y.DB.ExecContext(ctx, q, "%"+year)
 	if err != nil {
 		return err
 	}
