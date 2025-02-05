@@ -104,7 +104,7 @@ func (u UserModel) Update(user *User) error {
 	query := `
 	UPDATE users
 	SET username = $1, password = $2
-	WHERE student_id = $3`
+	WHERE id = $3`
 	args := []interface{}{
 		&user.Username,
 		&user.Password,
