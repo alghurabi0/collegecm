@@ -71,11 +71,11 @@ func (y YearModel) GetAll() ([]*Year, error) {
 }
 
 func (y YearModel) Insert(year *Year) error {
-	studentsTablename := fmt.Sprintf("students_%s", year)
-	subjectsTablename := fmt.Sprintf("subjects_%s", year)
-	carryoverTablename := fmt.Sprintf("carryovers_%s", year)
-	exemptedTablename := fmt.Sprintf("exempted_%s", year)
-	marksTablename := fmt.Sprintf("marks_%s", year)
+	studentsTablename := fmt.Sprintf("students_%s", year.Year)
+	subjectsTablename := fmt.Sprintf("subjects_%s", year.Year)
+	carryoverTablename := fmt.Sprintf("carryovers_%s", year.Year)
+	exemptedTablename := fmt.Sprintf("exempted_%s", year.Year)
+	marksTablename := fmt.Sprintf("marks_%s", year.Year)
 
 	studentsQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
