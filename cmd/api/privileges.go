@@ -90,7 +90,7 @@ func (app *application) createPrivilege(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	privilege.TableName = input.TableName
+	privilege.TableName = input.TableName + "_" + input.Year
 	err = app.writeJSON(w, http.StatusCreated, envelope{"privilege": privilege}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
