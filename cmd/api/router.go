@@ -77,8 +77,9 @@ func (app *application) routes() http.Handler {
 	router.Handle("POST /v1/logout", auth.ThenFunc(app.logout))
 	// custom
 	router.Handle("GET /v1/custom/{year}/{id}", custom.ThenFunc(app.getStudentData))
-	// general
+	// years
 	router.Handle("GET /v1/years", auth.ThenFunc(app.getYears))
+	router.Handle("POST /v1/years", userWrite.ThenFunc(app.createYear))
 	// Return the httprouter instance.
 	return standard.Then(router)
 }
