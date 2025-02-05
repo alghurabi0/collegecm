@@ -80,6 +80,7 @@ func (app *application) routes() http.Handler {
 	// years
 	router.Handle("GET /v1/years", auth.ThenFunc(app.getYears))
 	router.Handle("POST /v1/years", userWrite.ThenFunc(app.createYear))
+	router.Handle("DELETE /v1/years", userWrite.ThenFunc(app.deleteYear))
 	// Return the httprouter instance.
 	return standard.Then(router)
 }

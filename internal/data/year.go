@@ -106,29 +106,29 @@ func (y YearModel) Insert(year *Year) error {
 	carryoverQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES students_2024_2025(student_id) NOT NULL,
-    subject_id INTEGER REFERENCES subjects_2024_2025(subject_id) NOT NULL,
+    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
+    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (student_id, subject_id)
-	);`, carryoverTablename)
+	);`, carryoverTablename, studentsTablename, subjectsTablename)
 	exemptedQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES students_2024_2025(student_id) NOT NULL,
-    subject_id INTEGER REFERENCES subjects_2024_2025(subject_id) NOT NULL,
+    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
+    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (student_id, subject_id)
-	);`, exemptedTablename)
+	);`, exemptedTablename, studentsTablename, subjectsTablename)
 	marksQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES students_2024_2025(student_id) NOT NULL,
-    subject_id INTEGER REFERENCES subjects_2024_2025(subject_id) NOT NULL,
+    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
+    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
 	semester_mark INTEGER NOT NULL DEFAULT 0,
 	final_mark INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (student_id, subject_id)
-	);`, marksTablename)
+	);`, marksTablename, studentsTablename, subjectsTablename)
 	q2 := `INSERT INTO tables (table_name) values ($1);`
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -208,5 +208,48 @@ func createMarksTable(ctx context.Context, db *sql.DB, query, q2, table string) 
 	}
 	args := []interface{}{table}
 	_, err = db.ExecContext(ctx, q2, args...)
+	return err
+}
+
+func (y YearModel) Delete(year string) error {
+	studentsTable := fmt.Sprintf("students_%s", year)
+	subjectsTable := fmt.Sprintf("subjects_%s", year)
+	carryoversTable := fmt.Sprintf("carryovers_%s", year)
+	exemptedTable := fmt.Sprintf("exempted_%s", year)
+	marksTable := fmt.Sprintf("marks_%s", year)
+	stq := fmt.Sprintf(`DROP TABLE IF EXISTS %s;`, studentsTable)
+	suq := fmt.Sprintf(`DROP TABLE IF EXISTS %s;`, subjectsTable)
+	cq := fmt.Sprintf(`DROP TABLE IF EXISTS %s;`, carryoversTable)
+	eq := fmt.Sprintf(`DROP TABLE IF EXISTS %s;`, exemptedTable)
+	mq := fmt.Sprintf(`DROP TABLE IF EXISTS %s;`, marksTable)
+	q := `DELETE FROM tables WHERE table_name LIKE $1;`
+	q2 := `DELETE FROM years WHERE year = $1;`
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	_, err := y.DB.ExecContext(ctx, mq)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, eq)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, cq)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, stq)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, suq)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, q, year)
+	if err != nil {
+		return err
+	}
+	_, err = y.DB.ExecContext(ctx, q2, year)
 	return err
 }

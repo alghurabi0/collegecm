@@ -52,3 +52,24 @@ func (app *application) createYear(w http.ResponseWriter, r *http.Request) {
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) deleteYear(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Year string `json:"year"`
+	}
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	if input.Year == "" {
+		app.notFoundResponse(w, r)
+		return
+	}
+	err = app.models.Years.Delete(input.Year)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
