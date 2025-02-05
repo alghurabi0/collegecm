@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"runtime/debug"
 )
 
 // The logError() method is a generic helper for logging an error message. Later in the
@@ -35,6 +36,9 @@ func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, st
 func (app *application) serverErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	app.logError(r, err)
 	message := "the server encountered a problem and could not process your request"
+	// print the debug trace of the issue
+	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
+	app.logger.Output(2, trace)
 	app.errorResponse(w, r, http.StatusInternalServerError, message)
 }
 
