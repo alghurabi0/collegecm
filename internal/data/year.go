@@ -106,24 +106,24 @@ func (y YearModel) Insert(year *Year) error {
 	carryoverQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
-    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
+    student_id INTEGER REFERENCES %s(student_id) ON DELETE CASCADE NOT NULL,
+    subject_id INTEGER REFERENCES %s(subject_id) ON DELETE CASCADE NOT NULL,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (student_id, subject_id)
 	);`, carryoverTablename, studentsTablename, subjectsTablename)
 	exemptedQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
-    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
+    student_id INTEGER REFERENCES %s(student_id) ON DELETE CASCADE NOT NULL ,
+    subject_id INTEGER REFERENCES %s(subject_id) ON DELETE CASCADE NOT NULL ,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
     UNIQUE (student_id, subject_id)
 	);`, exemptedTablename, studentsTablename, subjectsTablename)
 	marksQ := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 	id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES %s(student_id) NOT NULL ON DELETE CASCADE,
-    subject_id INTEGER REFERENCES %s(subject_id) NOT NULL ON DELETE CASCADE,
+    student_id INTEGER REFERENCES %s(student_id) ON DELETE CASCADE NOT NULL,
+    subject_id INTEGER REFERENCES %s(subject_id) ON DELETE CASCADE NOT NULL,
 	semester_mark INTEGER NOT NULL DEFAULT 0,
 	final_mark INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW(),
