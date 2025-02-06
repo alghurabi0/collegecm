@@ -17,7 +17,12 @@ type TableModel struct {
 }
 
 func (t TableModel) GetByName(name, year string) (*Table, error) {
-	tableName := name + "_" + year
+	var tableName string
+	if name == "users" || name == "privileges" || name == "years" {
+		tableName = name
+	} else {
+		tableName = name + "_" + year
+	}
 	query := `SELECT id, table_name FROM tables WHERE table_name = $1`
 	var table Table
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
