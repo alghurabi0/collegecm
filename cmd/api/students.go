@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"collegecm.hamid.net/internal/data"
@@ -202,27 +203,47 @@ func (app *application) deleteStudent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseMultipartForm(10 << 20) // 10 MB max memory
+	year, err := app.readYearParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	err = r.ParseMultipartForm(10 << 20) // 10 MB max memory
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, "الحد الاقصى لحجم الملف هو mb 10 ")
 		return
 	}
-	file, _, err := r.FormFile("file")
+	file, handler, err := r.FormFile("file")
 	if err != nil {
 		app.errorResponse(w, r, http.StatusBadRequest, "لم يتم ارفاق ملف")
 		return
 	}
 	defer file.Close()
-	students := []*data.Student{}
-	err = app.processFile(&file, &students)
+	filePath := "./uploads/" + handler.Filename
+	err = app.saveFile(file, filePath)
 	if err != nil {
-		app.errorResponse(w, r, http.StatusBadRequest, "حدث خطأ, يرجى التواصل مع الدعم")
-		fmt.Println(err)
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	rows, err := app.readExcel(filePath)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 	allErrors := make(map[string]string)
 	v := validator.New()
-	for i, student := range students {
+	for i, row := range rows {
+		student_id, err := strconv.Atoi(row[2])
+		if err != nil {
+			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب يجب ان يكون رقم صحيح"
+			continue
+		}
+		student := &data.Student{
+			StudentName: row[0],
+			Stage:       row[1],
+			StudentId:   student_id,
+			State:       "active",
+		}
 		// validate
 		v.Errors = make(map[string]string)
 		if data.ValidateStudent(v, student); !v.Valid() {
@@ -233,13 +254,13 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 			allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
 			continue
 		}
-		err = app.models.Students.Insert("", student)
+		err = app.models.Students.Insert(year, student)
 		if err != nil {
 			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
 		}
 	}
 	// get all subjects or redirect
-	allStudents, err := app.models.Students.GetAll("", "")
+	allStudents, err := app.models.Students.GetAll(year, "all")
 	if err != nil {
 		switch {
 		case errors.Is(err, data.ErrRecordNotFound):

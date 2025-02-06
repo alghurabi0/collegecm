@@ -7,11 +7,13 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
 	"collegecm.hamid.net/internal/data"
 	"github.com/gocarina/gocsv"
+	"github.com/xuri/excelize/v2"
 )
 
 type envelope map[string]interface{}
@@ -192,6 +194,36 @@ func (app *application) processFile(file *multipart.File, data interface{}) erro
 		return err
 	}
 	return nil
+}
+
+func (app *application) saveFile(file multipart.File, filePath string) error {
+	// Create a new file on the server
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	// Copy the uploaded file's content to the new file
+	if _, err := io.Copy(dst, file); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (app *application) readExcel(filePath string) ([][]string, error) {
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	rows, err := f.GetRows("Sheet1") // Assuming data is in Sheet1
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
 }
 
 // func (app *application) isLoggedInCheck(r *http.Request) bool {

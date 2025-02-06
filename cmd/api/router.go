@@ -29,14 +29,14 @@ func (app *application) routes() http.Handler {
 	router.Handle("GET /v1/subjects/{year}/{stage}", getAll.ThenFunc(app.getSubjects))
 	//router.Handle("GET /v1/subject/{year}/{id}", auth.ThenFunc(app.getSubjectHandler))
 	router.Handle("POST /v1/subjects/{year}", auth.ThenFunc(app.createSubjectHandler))
-	router.Handle("POST /v1/subjects/import", auth.ThenFunc(app.importSubjects))
+	router.Handle("POST /v1/subjects/import/{year}", auth.ThenFunc(app.importSubjects))
 	router.Handle("PATCH /v1/subjects/{year}/{id}", write.ThenFunc(app.updateSubject))
 	router.Handle("DELETE /v1/subjects/{year}/{id}", write.ThenFunc(app.deleteSubject))
 	// students
 	router.Handle("GET /v1/students/{year}/{stage}", getAll.ThenFunc(app.getStudents))
 	//router.Handle("GET /v1/student/{year}/{id}", auth.ThenFunc(app.getStudent))
 	router.Handle("POST /v1/students/{year}", auth.ThenFunc(app.createStudent))
-	router.Handle("POST /v1/students/import", auth.ThenFunc(app.importstudents))
+	router.Handle("POST /v1/students/import/{year}", auth.ThenFunc(app.importstudents))
 	router.Handle("PATCH /v1/students/{year}/{id}", write.ThenFunc(app.updateStudent))
 	router.Handle("DELETE /v1/students/{year}/{id}", write.ThenFunc(app.deleteStudent))
 	// carryovers
