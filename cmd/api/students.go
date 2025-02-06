@@ -256,7 +256,10 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 		// if err != nil {
 		// 	allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
 		// }
-		app.logger.Println(row, i)
+		app.logger.Println(row[0], i)
+		app.logger.Println(row[1], i)
+		app.logger.Println(row[2], i)
+		app.logger.Println(row[3], i)
 	}
 	// get all subjects or redirect
 	allStudents, err := app.models.Students.GetAll(year, "all")
