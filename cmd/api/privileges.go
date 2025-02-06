@@ -85,12 +85,21 @@ func (app *application) createPrivilege(w http.ResponseWriter, r *http.Request) 
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
+	if input.TableName == "users" || input.TableName == "privileges" || input.TableName == "years" {
+		privilege.SubjectId = -1
+		privilege.Stage = "all"
+		privilege.Year = "all"
+	}
 	err = app.models.Privileges.Insert(privilege)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	privilege.TableName = input.TableName + "_" + input.Year
+	if input.TableName == "users" || input.TableName == "privileges" || input.TableName == "years" {
+		privilege.TableName = input.TableName
+	} else {
+		privilege.TableName = input.TableName + "_" + input.Year
+	}
 	err = app.writeJSON(w, http.StatusCreated, envelope{"privilege": privilege}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
