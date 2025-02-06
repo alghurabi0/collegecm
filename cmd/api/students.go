@@ -244,7 +244,7 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 			StudentName: row[0],
 			Stage:       row[1],
 			StudentId:   student_id,
-			State:       "active",
+			State:       row[3],
 		}
 		// validate
 		v.Errors = make(map[string]string)
