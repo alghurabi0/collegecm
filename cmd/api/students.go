@@ -2,7 +2,10 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"collegecm.hamid.net/internal/data"
 	"collegecm.hamid.net/internal/validator"
@@ -224,43 +227,41 @@ func (app *application) importstudents(w http.ResponseWriter, r *http.Request) {
 	}
 	rows, err := app.readExcel(filePath)
 	if err != nil {
+		app.removeFile(filePath)
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 	rows = rows[1:] // remove header
 	allErrors := make(map[string]string)
-	//v := validator.New()
+	v := validator.New()
 	for i, row := range rows {
-		// student_id, err := strconv.Atoi(row[2])
-		// if err != nil {
-		// 	allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب يجب ان يكون رقم صحيح"
-		// 	continue
-		// }
-		// student := &data.Student{
-		// 	StudentName: row[0],
-		// 	Stage:       row[1],
-		// 	StudentId:   student_id,
-		// 	State:       "active",
-		// }
-		// // validate
-		// v.Errors = make(map[string]string)
-		// if data.ValidateStudent(v, student); !v.Valid() {
-		// 	var errorMsgs []string
-		// 	for key, msg := range v.Errors {
-		// 		errorMsgs = append(errorMsgs, key+": "+msg)
-		// 	}
-		// 	allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
-		// 	continue
-		// }
-		// err = app.models.Students.Insert(year, student)
-		// if err != nil {
-		// 	allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
-		// }
-		app.logger.Println(row[0], i)
-		app.logger.Println(row[1], i)
-		app.logger.Println(row[2], i)
-		app.logger.Println(row[3], i)
+		student_id, err := strconv.Atoi(row[2])
+		if err != nil {
+			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب يجب ان يكون رقم صحيح"
+			continue
+		}
+		student := &data.Student{
+			StudentName: row[0],
+			Stage:       row[1],
+			StudentId:   student_id,
+			State:       "active",
+		}
+		// validate
+		v.Errors = make(map[string]string)
+		if data.ValidateStudent(v, student); !v.Valid() {
+			var errorMsgs []string
+			for key, msg := range v.Errors {
+				errorMsgs = append(errorMsgs, key+": "+msg)
+			}
+			allErrors[fmt.Sprintf("row-%d", i+1)] = strings.Join(errorMsgs, ", ")
+			continue
+		}
+		err = app.models.Students.Insert(year, student)
+		if err != nil {
+			allErrors[fmt.Sprintf("row-%d", i+1)] = "رقم الطالب مكرر او حدث خطأ"
+		}
 	}
+	app.removeFile(filePath)
 	// get all subjects or redirect
 	allStudents, err := app.models.Students.GetAll(year, "all")
 	if err != nil {

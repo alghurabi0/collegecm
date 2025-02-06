@@ -212,6 +212,15 @@ func (app *application) saveFile(file multipart.File, filePath string) error {
 	return nil
 }
 
+// remove a file
+func (app *application) removeFile(filePath string) error {
+	err := os.Remove(filePath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (app *application) readExcel(filePath string) ([][]string, error) {
 	f, err := excelize.OpenFile(filePath)
 	if err != nil {
